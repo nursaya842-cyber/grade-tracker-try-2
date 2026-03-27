@@ -1,0 +1,16 @@
+-- Seed an admin user.
+-- Run AFTER migrations 001 and 002 are applied.
+--
+-- Step 1: Create auth user via Supabase Dashboard → Authentication → Add User:
+--   Email: +77000000000@university.local
+--   Password: admin123456
+--
+-- Step 2: After the auth trigger inserts a row into public.users,
+--   verify and fix the role if needed:
+--
+-- UPDATE public.users
+-- SET role = 'admin', full_name = 'Super Admin'
+-- WHERE phone = '+77000000000';
+--
+-- Alternatively, create via supabase.auth.admin.createUser in a script:
+-- See scripts/seed-admin.ts
