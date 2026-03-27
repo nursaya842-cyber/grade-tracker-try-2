@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
   // Last 5 created users
   const { data: recentUsers } = await supabase
     .from("users")
-    .select("id, full_name, role, phone, created_at")
+    .select("id, full_name, role, email, created_at")
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(5);

@@ -28,14 +28,14 @@ export default async function TeacherStudentsPage() {
   // Get distinct students
   const { data: enrollments } = await supabase
     .from("lesson_students")
-    .select("student_id, users!inner(id, full_name, phone, face_photo_url, course_year)")
+    .select("student_id, users!inner(id, full_name, email, face_photo_url, course_year)")
     .in("lesson_id", lessonIds);
 
   const seen = new Set<string>();
   const students: Array<{
     id: string;
     full_name: string;
-    phone: string;
+    email: string;
     face_photo_url: string | null;
     course_year: number | null;
   }> = [];
@@ -46,7 +46,7 @@ export default async function TeacherStudentsPage() {
       const u = e.users as unknown as {
         id: string;
         full_name: string;
-        phone: string;
+        email: string;
         face_photo_url: string | null;
         course_year: number | null;
       };

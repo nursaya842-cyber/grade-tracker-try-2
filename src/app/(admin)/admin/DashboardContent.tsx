@@ -25,7 +25,7 @@ interface DashboardProps {
     id: string;
     full_name: string;
     role: string;
-    phone: string;
+    email: string;
     created_at: string;
   }[];
 }
@@ -77,9 +77,9 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
       key: "full_name",
     },
     {
-      title: "Телефон",
-      dataIndex: "phone",
-      key: "phone",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "Роль",

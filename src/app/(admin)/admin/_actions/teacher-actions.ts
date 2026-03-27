@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { phoneToAuthEmail } from "@/lib/utils";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
@@ -14,7 +13,7 @@ function getServiceClient() {
 }
 
 export async function createTeacher(formData: {
-  phone: string;
+  email: string;
   password: string;
   fullName: string;
   diplomaUrl?: string;
@@ -22,11 +21,11 @@ export async function createTeacher(formData: {
   const serviceClient = getServiceClient();
 
   const { data, error } = await serviceClient.auth.admin.createUser({
-    email: phoneToAuthEmail(formData.phone),
+    email: formData.email.trim().toLowerCase(),
     password: formData.password,
     email_confirm: true,
     user_metadata: {
-      phone: formData.phone,
+      email: formData.email.trim().toLowerCase(),
       full_name: formData.fullName,
       role: "teacher",
     },
@@ -48,7 +47,7 @@ export async function createTeacher(formData: {
 
 export async function updateTeacher(
   userId: string,
-  formData: { fullName: string; phone: string; diplomaUrl?: string }
+  formData: { fullName: string; email: string; diplomaUrl?: string }
 ) {
   const supabase = await createClient();
 
@@ -56,7 +55,7 @@ export async function updateTeacher(
     .from("users")
     .update({
       full_name: formData.fullName,
-      phone: formData.phone,
+      email: formData.email.trim().toLowerCase(),
       diploma_url: formData.diplomaUrl,
       updated_at: new Date().toISOString(),
     })

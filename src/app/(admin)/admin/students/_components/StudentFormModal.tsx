@@ -9,7 +9,7 @@ import imageCompression from "browser-image-compression";
 
 interface Student {
   id: string;
-  phone: string;
+  email: string;
   full_name: string;
   course_year: number | null;
   face_photo_url: string | null;
@@ -33,7 +33,7 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
       if (student) {
         form.setFieldsValue({
           fullName: student.full_name,
-          phone: student.phone,
+          email: student.email,
           courseYear: student.course_year,
         });
         setPhotoPath(student.face_photo_url);
@@ -78,7 +78,7 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
     if (isEditing) {
       const res = await updateStudent(student.id, {
         fullName: values.fullName,
-        phone: values.phone,
+        email: values.email,
         courseYear: values.courseYear,
         facePhotoUrl: photoPath ?? undefined,
       });
@@ -89,7 +89,7 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
       }
     } else {
       const res = await createStudent({
-        phone: values.phone,
+        email: values.email,
         password: values.password,
         fullName: values.fullName,
         courseYear: values.courseYear,
@@ -126,11 +126,14 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
         </Form.Item>
 
         <Form.Item
-          name="phone"
-          label="Телефон"
-          rules={[{ required: true, message: "Введите телефон" }]}
+          name="email"
+          label="Email"
+          rules={[
+            { required: true, message: "Введите email" },
+            { type: "email", message: "Некорректный email" },
+          ]}
         >
-          <Input placeholder="87771234567" />
+          <Input placeholder="student@university.kz" />
         </Form.Item>
 
         {!isEditing && (

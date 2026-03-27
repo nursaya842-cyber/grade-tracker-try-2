@@ -225,7 +225,7 @@ export async function fetchMyClubHead() {
   // Members
   const { data: members } = await supabase
     .from("club_members")
-    .select("student_id, users!inner(id, full_name, phone, face_photo_url)")
+    .select("student_id, users!inner(id, full_name, email, face_photo_url)")
     .eq("club_id", club.id);
 
   // Announcements
@@ -242,7 +242,7 @@ export async function fetchMyClubHead() {
       const u = m.users as unknown as {
         id: string;
         full_name: string;
-        phone: string;
+        email: string;
         face_photo_url: string | null;
       };
       return { ...u, studentId: m.student_id };
@@ -389,7 +389,7 @@ export async function fetchStudentProfile() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("id, full_name, phone, course_year, face_photo_url, created_at")
+    .select("id, full_name, email, course_year, face_photo_url, created_at")
     .eq("id", effectiveId)
     .single();
 

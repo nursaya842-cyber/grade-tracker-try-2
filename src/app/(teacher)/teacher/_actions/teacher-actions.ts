@@ -192,7 +192,7 @@ export async function fetchTeacherStudents() {
   // Get distinct students from lesson_students
   const { data: enrollments } = await supabase
     .from("lesson_students")
-    .select("student_id, users!inner(id, full_name, phone, face_photo_url, course_year)")
+    .select("student_id, users!inner(id, full_name, email, face_photo_url, course_year)")
     .in("lesson_id", lessonIds);
 
   if (!enrollments) return [];
@@ -202,7 +202,7 @@ export async function fetchTeacherStudents() {
   const students: Array<{
     id: string;
     full_name: string;
-    phone: string;
+    email: string;
     face_photo_url: string | null;
     course_year: number | null;
   }> = [];
@@ -213,7 +213,7 @@ export async function fetchTeacherStudents() {
       const u = e.users as unknown as {
         id: string;
         full_name: string;
-        phone: string;
+        email: string;
         face_photo_url: string | null;
         course_year: number | null;
       };
@@ -286,7 +286,7 @@ export async function fetchTeacherProfile() {
 
   const { data } = await supabase
     .from("users")
-    .select("id, full_name, phone, diploma_url, created_at")
+    .select("id, full_name, email, diploma_url, created_at")
     .eq("id", effectiveId)
     .single();
 

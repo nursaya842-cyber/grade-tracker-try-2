@@ -20,7 +20,7 @@ import StudentSocialModal from "./StudentSocialModal";
 
 interface Student {
   id: string;
-  phone: string;
+  email: string;
   full_name: string;
   course_year: number | null;
   face_photo_url: string | null;
@@ -42,7 +42,7 @@ export default function StudentsTable({ students }: { students: Student[] }) {
   const filtered = students.filter((s) => {
     const matchesSearch =
       s.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      s.phone.includes(search);
+      s.email.includes(search);
     const matchesCourse = courseFilter ? s.course_year === courseFilter : true;
     return matchesSearch && matchesCourse;
   });
@@ -85,9 +85,9 @@ export default function StudentsTable({ students }: { students: Student[] }) {
       sorter: (a, b) => a.full_name.localeCompare(b.full_name),
     },
     {
-      title: "Телефон",
-      dataIndex: "phone",
-      key: "phone",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "Курс",
@@ -182,7 +182,7 @@ export default function StudentsTable({ students }: { students: Student[] }) {
 
       <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search
-          placeholder="Поиск по имени или телефону..."
+          placeholder="Поиск по имени или email..."
           allowClear
           onChange={(e) => setSearch(e.target.value)}
           style={{ width: 300 }}

@@ -40,7 +40,7 @@ import type { Dayjs } from "dayjs";
 interface Member {
   id: string;
   fullName: string;
-  phone: string;
+  email: string;
 }
 
 interface Signup {
@@ -167,8 +167,8 @@ export default function MyClubClient({
     },
     {
       title: "Телефон",
-      dataIndex: "phone",
-      key: "phone",
+      dataIndex: "email",
+      key: "email",
       width: 160,
     },
     {

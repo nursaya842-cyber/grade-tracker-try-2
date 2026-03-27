@@ -22,7 +22,7 @@ import AttendanceModal from "./AttendanceModal";
 interface Student {
   id: string;
   full_name: string;
-  phone: string;
+  email: string;
   face_photo_url: string | null;
   course_year: number | null;
 }
@@ -39,7 +39,7 @@ export default function TeacherStudentsClient({
   const filtered = students.filter(
     (s) =>
       s.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      s.phone.includes(search)
+      s.email.includes(search)
   );
 
   const columns: ColumnsType<Student> = [
@@ -58,8 +58,8 @@ export default function TeacherStudentsClient({
     },
     {
       title: "Телефон",
-      dataIndex: "phone",
-      key: "phone",
+      dataIndex: "email",
+      key: "email",
       width: 160,
     },
     {

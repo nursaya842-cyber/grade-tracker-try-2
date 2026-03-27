@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 
 interface Teacher {
   id: string;
-  phone: string;
+  email: string;
   full_name: string;
   diploma_url: string | null;
 }
@@ -31,7 +31,7 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
       if (teacher) {
         form.setFieldsValue({
           fullName: teacher.full_name,
-          phone: teacher.phone,
+          email: teacher.email,
         });
         setDiplomaPath(teacher.diploma_url);
       } else {
@@ -63,7 +63,7 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
     if (isEditing) {
       const res = await updateTeacher(teacher.id, {
         fullName: values.fullName,
-        phone: values.phone,
+        email: values.email,
         diplomaUrl: diplomaPath ?? undefined,
       });
       if (res.error) message.error(res.error);
@@ -73,7 +73,7 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
       }
     } else {
       const res = await createTeacher({
-        phone: values.phone,
+        email: values.email,
         password: values.password,
         fullName: values.fullName,
         diplomaUrl: diplomaPath ?? undefined,
@@ -109,11 +109,14 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
         </Form.Item>
 
         <Form.Item
-          name="phone"
-          label="Телефон"
-          rules={[{ required: true, message: "Введите телефон" }]}
+          name="email"
+          label="Email"
+          rules={[
+            { required: true, message: "Введите email" },
+            { type: "email", message: "Некорректный email" },
+          ]}
         >
-          <Input placeholder="87771234567" />
+          <Input placeholder="teacher@university.kz" />
         </Form.Item>
 
         {!isEditing && (

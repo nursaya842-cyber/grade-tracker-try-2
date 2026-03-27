@@ -1,10 +1,8 @@
 /**
- * Convert phone number to a fake email for Supabase Auth.
- * Example: "+77001234567" → "+77001234567@university.local"
+ * Normalize email for auth (trim + lowercase).
  */
-export function phoneToAuthEmail(phone: string): string {
-  const cleaned = phone.replace(/\s/g, "");
-  return `${cleaned}@uni.portal`;
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
 }
 
 /**

@@ -25,7 +25,7 @@ export default async function MyClubPage() {
   // Members
   const { data: members } = await supabase
     .from("club_members")
-    .select("student_id, users!inner(id, full_name, phone)")
+    .select("student_id, users!inner(id, full_name, email)")
     .eq("club_id", club.id);
 
   // Announcements with signups
@@ -42,9 +42,9 @@ export default async function MyClubPage() {
     const u = m.users as unknown as {
       id: string;
       full_name: string;
-      phone: string;
+      email: string;
     };
-    return { id: u.id, fullName: u.full_name, phone: u.phone };
+    return { id: u.id, fullName: u.full_name, email: u.email };
   });
 
   const announcementsList = (announcements ?? []).map((a) => {

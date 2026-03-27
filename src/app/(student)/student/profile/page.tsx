@@ -15,7 +15,7 @@ export default async function StudentProfilePage() {
   // Profile
   const { data: profile } = await supabase
     .from("users")
-    .select("id, full_name, phone, course_year, face_photo_url, created_at")
+    .select("id, full_name, email, course_year, face_photo_url, created_at")
     .eq("id", effectiveId)
     .single();
 

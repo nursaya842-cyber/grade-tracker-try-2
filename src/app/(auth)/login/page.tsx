@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button, Form, Input, Typography, App } from "antd";
-import { PhoneOutlined, LockOutlined } from "@ant-design/icons";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { createClient } from "@/lib/supabase/client";
-import { phoneToAuthEmail } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
@@ -15,16 +14,16 @@ export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  const onFinish = async (values: { phone: string; password: string }) => {
+  const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: phoneToAuthEmail(values.phone),
+        email: values.email.trim().toLowerCase(),
         password: values.password,
       });
 
       if (error) {
-        message.error("Неверный номер телефона или пароль");
+        message.error("Неверный email или пароль");
         setLoading(false);
         return;
       }
@@ -147,17 +146,20 @@ export default function LoginPage() {
             size="large"
           >
             <Form.Item
-              name="phone"
+              name="email"
               label={
                 <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 13, fontWeight: 500 }}>
-                  Номер телефона
+                  Email
                 </span>
               }
-              rules={[{ required: true, message: "Введите номер телефона" }]}
+              rules={[
+                { required: true, message: "Введите email" },
+                { type: "email", message: "Некорректный email" },
+              ]}
             >
               <Input
-                prefix={<PhoneOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
-                placeholder="+7 700 123 4567"
+                prefix={<MailOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
+                placeholder="example@university.kz"
                 style={{
                   background: "rgba(255,255,255,0.06)",
                   borderColor: "rgba(255,255,255,0.1)",

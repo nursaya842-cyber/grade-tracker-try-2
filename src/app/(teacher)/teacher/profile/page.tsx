@@ -14,7 +14,7 @@ export default async function TeacherProfilePage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("id, full_name, phone, diploma_url, created_at")
+    .select("id, full_name, email, diploma_url, created_at")
     .eq("id", effectiveId)
     .single();
 

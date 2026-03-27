@@ -6,7 +6,7 @@ export default async function TeachersPage() {
 
   const { data: teachers } = await supabase
     .from("users")
-    .select("id, phone, full_name, diploma_url, created_at")
+    .select("id, email, full_name, diploma_url, created_at")
     .eq("role", "teacher")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });

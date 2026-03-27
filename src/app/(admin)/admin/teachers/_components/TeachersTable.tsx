@@ -16,7 +16,7 @@ import { createClient } from "@/lib/supabase/client";
 
 interface Teacher {
   id: string;
-  phone: string;
+  email: string;
   full_name: string;
   diploma_url: string | null;
   created_at: string;
@@ -34,7 +34,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
   const filtered = teachers.filter(
     (t) =>
       t.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      t.phone.includes(search)
+      t.email.includes(search)
   );
 
   const handleDelete = async (id: string) => {
@@ -71,9 +71,9 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
       sorter: (a, b) => a.full_name.localeCompare(b.full_name),
     },
     {
-      title: "Телефон",
-      dataIndex: "phone",
-      key: "phone",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "Диплом",
@@ -164,7 +164,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
       </div>
 
       <Input.Search
-        placeholder="Поиск по имени или телефону..."
+        placeholder="Поиск по имени или email..."
         allowClear
         onChange={(e) => setSearch(e.target.value)}
         style={{ marginBottom: 16, maxWidth: 360 }}

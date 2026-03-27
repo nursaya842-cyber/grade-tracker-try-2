@@ -19,7 +19,7 @@ import { formatDate } from "@/lib/utils";
 interface Profile {
   id: string;
   full_name: string;
-  phone: string;
+  email: string;
   diploma_url: string | null;
   created_at: string;
 }
@@ -62,7 +62,7 @@ export default function TeacherProfileClient({
       <Card style={{ maxWidth: 600 }}>
         <Descriptions column={1} bordered size="middle">
           <Descriptions.Item label="ФИО">{profile.full_name}</Descriptions.Item>
-          <Descriptions.Item label="Телефон">{profile.phone}</Descriptions.Item>
+          <Descriptions.Item label="Email">{profile.email}</Descriptions.Item>
           <Descriptions.Item label="Дата регистрации">
             {formatDate(profile.created_at)}
           </Descriptions.Item>

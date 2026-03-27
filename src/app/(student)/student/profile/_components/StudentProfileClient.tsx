@@ -29,7 +29,7 @@ import { formatDate } from "@/lib/utils";
 interface Profile {
   id: string;
   full_name: string;
-  phone: string;
+  email: string;
   course_year: number | null;
   face_photo_url: string | null;
   created_at: string;
@@ -133,8 +133,8 @@ export default function StudentProfileClient({
             <Descriptions.Item label="ФИО">
               {profile.full_name}
             </Descriptions.Item>
-            <Descriptions.Item label="Телефон">
-              {profile.phone}
+            <Descriptions.Item label="Email">
+              {profile.email}
             </Descriptions.Item>
             <Descriptions.Item label="Курс">
               {profile.course_year ? `${profile.course_year} курс` : "—"}
