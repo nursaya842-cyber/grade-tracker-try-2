@@ -33,6 +33,7 @@ export default function LoginPage() {
       const role = authUser?.user_metadata?.role as string | undefined;
       if (role === "admin") router.push("/admin");
       else if (role === "teacher") router.push("/teacher/lessons");
+      else if (role === "parent") router.push("/parent/children");
       else router.push("/student/schedule");
 
       router.refresh();
@@ -120,7 +121,7 @@ export default function LoginPage() {
               letterSpacing: "-0.02em",
             }}
           >
-            University Portal
+            KBTU CVM System
           </Title>
           <Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>
             Войдите в систему управления

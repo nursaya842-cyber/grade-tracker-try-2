@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getEffectiveUserIdFromCookies } from "@/lib/impersonation";
 import { redirect } from "next/navigation";
 import StudentProfileClient from "./_components/StudentProfileClient";
+import { calculateGpa } from "@/lib/utils";
+import { calculateEngagement } from "@/lib/engagement";
+import { fetchCheckinAverage } from "../_actions/checkin-actions";
 
 export default async function StudentProfilePage() {
   const supabase = await createClient();
@@ -35,6 +38,7 @@ export default async function StudentProfilePage() {
     scores.length > 0
       ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10
       : 0;
+  const gpa = calculateGpa(scores);
 
   // Attendance rate
   const { data: attData } = await supabase
@@ -53,6 +57,17 @@ export default async function StudentProfilePage() {
     .select("*", { count: "exact", head: true })
     .eq("student_id", effectiveId);
 
+  // Check-in average for engagement
+  const checkinAvg = await fetchCheckinAverage(effectiveId);
+
+  // Engagement score
+  const engagement = calculateEngagement({
+    attendancePct,
+    gpa,
+    eventSignups: signupCount ?? 0,
+    checkinAvg,
+  });
+
   // Photo signed URL
   let photoSignedUrl: string | null = null;
   if (profile.face_photo_url) {
@@ -68,8 +83,10 @@ export default async function StudentProfilePage() {
       photoSignedUrl={photoSignedUrl}
       stats={{
         avgGrade,
+        gpa,
         attendancePct,
         signupCount: signupCount ?? 0,
+        engagement,
       }}
     />
   );

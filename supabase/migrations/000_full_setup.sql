@@ -9,7 +9,7 @@
 
 CREATE TABLE IF NOT EXISTS users (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  phone           text UNIQUE NOT NULL,
+  email           text UNIQUE NOT NULL,
   full_name       text NOT NULL,
   role            text NOT NULL CHECK (role IN ('admin','teacher','student')),
   face_photo_url  text,
@@ -221,12 +221,12 @@ ON CONFLICT (id) DO NOTHING;
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $$
 BEGIN
-  INSERT INTO public.users (id, phone, full_name, role, course_year)
+  INSERT INTO public.users (id, email, full_name, role, course_year)
   VALUES (
     NEW.id,
-    NEW.raw_user_meta_data->>'phone',
-    NEW.raw_user_meta_data->>'full_name',
-    NEW.raw_user_meta_data->>'role',
+    COALESCE(NEW.raw_user_meta_data->>'email', NEW.email),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'student'),
     (NEW.raw_user_meta_data->>'course_year')::int
   );
   RETURN NEW;
@@ -535,7 +535,7 @@ CREATE TRIGGER trg_club_announcements_updated_at BEFORE UPDATE ON club_announcem
 
 -- ============================================
 -- DONE. Now create the admin user via Supabase Dashboard:
--- Authentication → Add User → Email: 87772000000@university.local, Password: Anar&@2005
+-- Authentication → Add User → Email: nursaya842@gmail.com, Password: Anar&@2005
 -- Then run:
--- UPDATE public.users SET role='admin', full_name='Super Admin' WHERE phone='87772000000';
+-- UPDATE public.users SET role='admin', full_name='Super Admin' WHERE email='nursaya842@gmail.com';
 -- ============================================

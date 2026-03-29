@@ -87,7 +87,7 @@ export default function AnalyticsClient({
               value={kpi.avgAttendance}
               suffix="%"
               prefix={<PercentageOutlined />}
-              valueStyle={{ color: kpi.avgAttendance >= 70 ? "#52c41a" : "#f5222d" }}
+              styles={{ content: { color: kpi.avgAttendance >= 70 ? "#52c41a" : "#f5222d" } }}
             />
           </Card>
         </Col>

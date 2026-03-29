@@ -219,7 +219,7 @@ export default function RiskDashboardClient({
               title="В зоне риска"
               value={kpi.atRiskStudents}
               prefix={<WarningOutlined />}
-              valueStyle={{ color: kpi.atRiskStudents > 0 ? "#f5222d" : "#52c41a" }}
+              styles={{ content: { color: kpi.atRiskStudents > 0 ? "#f5222d" : "#52c41a" } }}
               suffix="студентов"
             />
           </Card>
@@ -230,7 +230,7 @@ export default function RiskDashboardClient({
               title="Просроченные отчёты"
               value={kpi.overdueTeachers}
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: kpi.overdueTeachers > 0 ? "#faad14" : "#52c41a" }}
+              styles={{ content: { color: kpi.overdueTeachers > 0 ? "#faad14" : "#52c41a" } }}
               suffix="преподавателей"
             />
           </Card>
@@ -242,7 +242,7 @@ export default function RiskDashboardClient({
               value={kpi.avgAttendance}
               prefix={<PercentageOutlined />}
               suffix="%"
-              valueStyle={{ color: kpi.avgAttendance >= 70 ? "#52c41a" : "#f5222d" }}
+              styles={{ content: { color: kpi.avgAttendance >= 70 ? "#52c41a" : "#f5222d" } }}
             />
           </Card>
         </Col>

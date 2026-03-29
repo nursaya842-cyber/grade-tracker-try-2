@@ -1,19 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Layout, Menu, Button, Typography, Avatar, Dropdown, theme } from "antd";
 import {
-  DashboardOutlined,
   TeamOutlined,
   UserOutlined,
-  BookOutlined,
-  BankOutlined,
-  UsergroupAddOutlined,
-  CalendarOutlined,
-  TrophyOutlined,
-  BarChartOutlined,
-  AlertOutlined,
-  RocketOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -25,20 +16,11 @@ const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
 
 const menuItems = [
-  { key: "/admin", icon: <DashboardOutlined />, label: "Главная" },
-  { key: "/admin/teachers", icon: <TeamOutlined />, label: "Преподаватели" },
-  { key: "/admin/students", icon: <UserOutlined />, label: "Студенты" },
-  { key: "/admin/faculties", icon: <BankOutlined />, label: "Факультеты" },
-  { key: "/admin/parents", icon: <UsergroupAddOutlined />, label: "Родители" },
-  { key: "/admin/subjects", icon: <BookOutlined />, label: "Предметы" },
-  { key: "/admin/schedule", icon: <CalendarOutlined />, label: "Расписание" },
-  { key: "/admin/clubs", icon: <TrophyOutlined />, label: "Клубы" },
-  { key: "/admin/analytics", icon: <BarChartOutlined />, label: "Аналитика" },
-  { key: "/admin/risk-dashboard", icon: <AlertOutlined />, label: "Риск-дашборд" },
-  { key: "/admin/effectiveness", icon: <RocketOutlined />, label: "Эффективность" },
+  { key: "/parent/children", icon: <TeamOutlined />, label: "Мои дети" },
+  { key: "/parent/profile", icon: <UserOutlined />, label: "Профиль" },
 ];
 
-export default function AdminShell({
+export default function ParentShell({
   children,
   userName,
 }: {
@@ -59,9 +41,11 @@ export default function AdminShell({
 
   const selectedKey =
     menuItems.find(
-      (item) => item.key !== "/admin" && pathname.startsWith(item.key)
+      (item) => item.key !== "/parent/children" && pathname.startsWith(item.key)
     )?.key ??
-    (pathname === "/admin" ? "/admin" : "");
+    (pathname.startsWith("/parent/children") || pathname === "/parent"
+      ? "/parent/children"
+      : "");
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -96,19 +80,14 @@ export default function AdminShell({
               width: 32,
               height: 32,
               borderRadius: 8,
-              background: "linear-gradient(135deg, #1677ff, #4096ff)",
+              background: "linear-gradient(135deg, #722ed1, #b37feb)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z"
-                fill="white"
-              />
-            </svg>
+            <TeamOutlined style={{ color: "#fff", fontSize: 16 }} />
           </div>
           {!collapsed && (
             <Text strong style={{ marginLeft: 12, fontSize: 15 }}>
@@ -122,10 +101,7 @@ export default function AdminShell({
           selectedKeys={[selectedKey]}
           items={menuItems}
           onClick={({ key }) => router.push(key)}
-          style={{
-            border: "none",
-            padding: "8px 0",
-          }}
+          style={{ border: "none", padding: "8px 0" }}
         />
       </Sider>
 
@@ -149,7 +125,6 @@ export default function AdminShell({
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
           />
-
           <Dropdown
             menu={{
               items: [
@@ -165,7 +140,7 @@ export default function AdminShell({
             placement="bottomRight"
           >
             <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <Avatar style={{ background: "#1677ff" }} icon={<UserOutlined />} />
+              <Avatar style={{ background: "#722ed1" }} icon={<UserOutlined />} />
               <Text style={{ fontSize: 14 }}>{userName}</Text>
             </div>
           </Dropdown>

@@ -18,16 +18,24 @@ import StudentFormModal from "./StudentFormModal";
 import StudentGradesModal from "./StudentGradesModal";
 import StudentSocialModal from "./StudentSocialModal";
 
+interface Faculty {
+  id: string;
+  name: string;
+}
+
 interface Student {
   id: string;
   email: string;
   full_name: string;
   course_year: number | null;
+  faculty_id: string | null;
+  faculty_name: string | null;
   face_photo_url: string | null;
   created_at: string;
+  gpa: number;
 }
 
-export default function StudentsTable({ students }: { students: Student[] }) {
+export default function StudentsTable({ students, faculties }: { students: Student[]; faculties: Faculty[] }) {
   const [search, setSearch] = useState("");
   const [courseFilter, setCourseFilter] = useState<number | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -96,6 +104,27 @@ export default function StudentsTable({ students }: { students: Student[] }) {
       width: 80,
       render: (v: number | null) => v ?? "—",
       sorter: (a, b) => (a.course_year ?? 0) - (b.course_year ?? 0),
+    },
+    {
+      title: "Факультет",
+      dataIndex: "faculty_name",
+      key: "faculty_name",
+      render: (v: string | null) => v ?? <span style={{ color: "#999" }}>—</span>,
+      filters: faculties.map((f) => ({ text: f.name, value: f.name })),
+      onFilter: (value, record) => record.faculty_name === value,
+      responsive: ["md"] as const,
+    },
+    {
+      title: "GPA",
+      dataIndex: "gpa",
+      key: "gpa",
+      width: 80,
+      render: (v: number) => (
+        <span style={{ color: v >= 3.0 ? "#52c41a" : v >= 2.0 ? "#faad14" : "#f5222d", fontWeight: 600 }}>
+          {v > 0 ? v.toFixed(2) : "—"}
+        </span>
+      ),
+      sorter: (a, b) => a.gpa - b.gpa,
     },
     {
       title: "Дата создания",
@@ -207,6 +236,7 @@ export default function StudentsTable({ students }: { students: Student[] }) {
       <StudentFormModal
         open={formOpen}
         student={editingStudent}
+        faculties={faculties}
         onClose={() => {
           setFormOpen(false);
           setEditingStudent(null);

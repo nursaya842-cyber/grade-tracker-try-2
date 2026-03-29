@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, Upload, Button, App } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { createStudent, updateStudent } from "../../_actions/student-actions";
@@ -12,16 +12,23 @@ interface Student {
   email: string;
   full_name: string;
   course_year: number | null;
+  faculty_id: string | null;
   face_photo_url: string | null;
+}
+
+interface Faculty {
+  id: string;
+  name: string;
 }
 
 interface Props {
   open: boolean;
   student: Student | null;
+  faculties: Faculty[];
   onClose: () => void;
 }
 
-export default function StudentFormModal({ open, student, onClose }: Props) {
+export default function StudentFormModal({ open, student, faculties, onClose }: Props) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [photoPath, setPhotoPath] = useState<string | null>(null);
@@ -35,6 +42,7 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
           fullName: student.full_name,
           email: student.email,
           courseYear: student.course_year,
+          facultyId: student.faculty_id,
         });
         setPhotoPath(student.face_photo_url);
       } else {
@@ -80,6 +88,7 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
         fullName: values.fullName,
         email: values.email,
         courseYear: values.courseYear,
+        facultyId: values.facultyId,
         facePhotoUrl: photoPath ?? undefined,
       });
       if (res.error) message.error(res.error);
@@ -93,6 +102,7 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
         password: values.password,
         fullName: values.fullName,
         courseYear: values.courseYear,
+        facultyId: values.facultyId,
         facePhotoUrl: photoPath ?? undefined,
       });
       if (res.error) message.error(res.error);
@@ -148,6 +158,22 @@ export default function StudentFormModal({ open, student, onClose }: Props) {
             <Input.Password placeholder="Пароль" />
           </Form.Item>
         )}
+
+        <Form.Item
+          name="facultyId"
+          label="Факультет"
+        >
+          <Select
+            placeholder="Выберите факультет"
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            options={faculties.map((f) => ({
+              label: f.name,
+              value: f.id,
+            }))}
+          />
+        </Form.Item>
 
         <Form.Item
           name="courseYear"

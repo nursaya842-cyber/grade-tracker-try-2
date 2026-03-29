@@ -64,7 +64,12 @@ export default function RecommendationCard({
           <Tag color={cat.color} style={{ marginBottom: 4 }}>
             {cat.label}
           </Tag>
-          <div style={{ fontSize: 13, lineHeight: 1.4 }}>{rec.next_action}</div>
+          <div
+            style={{ fontSize: 13, lineHeight: 1.4 }}
+            dangerouslySetInnerHTML={{
+              __html: rec.next_action.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"),
+            }}
+          />
         </div>
         <Button
           type="text"

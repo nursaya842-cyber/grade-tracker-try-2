@@ -100,7 +100,7 @@ export async function updateSession(request: NextRequest) {
   // Role-based route protection
   if (pathname.startsWith("/admin") && realRole !== "admin") {
     const url = request.nextUrl.clone();
-    url.pathname = realRole === "teacher" ? "/teacher/lessons" : "/student/schedule";
+    url.pathname = realRole === "teacher" ? "/teacher/lessons" : realRole === "parent" ? "/parent/children" : "/student/schedule";
     return NextResponse.redirect(url);
   }
 
@@ -108,7 +108,7 @@ export async function updateSession(request: NextRequest) {
     const allowed = realRole === "admin" || effectiveRole === "teacher";
     if (!allowed) {
       const url = request.nextUrl.clone();
-      url.pathname = realRole === "student" ? "/student/schedule" : "/admin";
+      url.pathname = realRole === "student" ? "/student/schedule" : realRole === "parent" ? "/parent/children" : "/admin";
       return NextResponse.redirect(url);
     }
   }
@@ -117,7 +117,16 @@ export async function updateSession(request: NextRequest) {
     const allowed = realRole === "admin" || effectiveRole === "student";
     if (!allowed) {
       const url = request.nextUrl.clone();
-      url.pathname = realRole === "teacher" ? "/teacher/lessons" : "/admin";
+      url.pathname = realRole === "teacher" ? "/teacher/lessons" : realRole === "parent" ? "/parent/children" : "/admin";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  if (pathname.startsWith("/parent")) {
+    const allowed = realRole === "admin" || realRole === "parent";
+    if (!allowed) {
+      const url = request.nextUrl.clone();
+      url.pathname = realRole === "teacher" ? "/teacher/lessons" : realRole === "student" ? "/student/schedule" : "/admin";
       return NextResponse.redirect(url);
     }
   }
@@ -127,6 +136,7 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     if (realRole === "admin") url.pathname = "/admin";
     else if (realRole === "teacher") url.pathname = "/teacher/lessons";
+    else if (realRole === "parent") url.pathname = "/parent/children";
     else url.pathname = "/student/schedule";
     return NextResponse.redirect(url);
   }

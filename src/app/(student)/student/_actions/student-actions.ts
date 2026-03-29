@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveUserIdFromCookies } from "@/lib/impersonation";
 import { revalidatePath } from "next/cache";
+import { calculateGpa } from "@/lib/utils";
 
 // ─── Helper ────────────────────────────────────────────────
 async function getStudentContext() {
@@ -441,6 +442,7 @@ export async function fetchStudentProfile() {
     photoSignedUrl,
     stats: {
       avgGrade,
+      gpa: calculateGpa(scores),
       attendancePct,
       signupCount: signupCount ?? 0,
     },

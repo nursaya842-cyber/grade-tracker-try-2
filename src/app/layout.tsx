@@ -5,8 +5,8 @@ import QueryProvider from "@/lib/providers/QueryProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "University Portal",
-  description: "Academic Performance & Club Management Portal",
+  title: "KBTU CVM System",
+  description: "KBTU Customer Value Management System",
 };
 
 export default function RootLayout({

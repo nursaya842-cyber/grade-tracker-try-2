@@ -17,6 +17,7 @@ export async function createStudent(formData: {
   password: string;
   fullName: string;
   courseYear: number;
+  facultyId?: string;
   facePhotoUrl?: string;
 }) {
   const serviceClient = getServiceClient();
@@ -40,6 +41,7 @@ export async function createStudent(formData: {
     .from("users")
     .update({
       course_year: formData.courseYear,
+      faculty_id: formData.facultyId ?? null,
       face_photo_url: formData.facePhotoUrl ?? null,
     })
     .eq("id", data.user.id);
@@ -54,6 +56,7 @@ export async function updateStudent(
     fullName: string;
     email: string;
     courseYear: number;
+    facultyId?: string;
     facePhotoUrl?: string;
   }
 ) {
@@ -65,6 +68,7 @@ export async function updateStudent(
       full_name: formData.fullName,
       email: formData.email.trim().toLowerCase(),
       course_year: formData.courseYear,
+      faculty_id: formData.facultyId ?? null,
       face_photo_url: formData.facePhotoUrl,
       updated_at: new Date().toISOString(),
     })

@@ -92,11 +92,9 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
                   avatar={<Avatar style={{ background: "#722ed1" }} icon={<TeamOutlined />} />}
                   title={club.name}
                   description={
-                    <Space direction="vertical" size={2}>
+                    <Space orientation="vertical" size={2}>
                       <span>Глава: {club.headName}</span>
-                      <Badge count={club.memberCount} showZero style={{ background: "#1677ff" }} overflowCount={999}>
-                        <span style={{ paddingRight: 8 }}>Участников</span>
-                      </Badge>
+                      <span>Участников: <strong>{club.memberCount}</strong></span>
                     </Space>
                   }
                 />

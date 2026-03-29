@@ -35,10 +35,19 @@ interface Profile {
   created_at: string;
 }
 
+interface EngagementResult {
+  score: number;
+  segment: string;
+  color: string;
+  label: string;
+}
+
 interface Stats {
   avgGrade: number;
+  gpa: number;
   attendancePct: number;
   signupCount: number;
+  engagement: EngagementResult;
 }
 
 interface Props {
@@ -82,34 +91,57 @@ export default function StudentProfileClient({
       <Typography.Title level={4}>Профиль</Typography.Title>
 
       {/* Mini-stats */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={8}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={5}>
           <Card>
             <Statistic
-              title="Средняя оценка"
-              value={stats.avgGrade}
+              title="Engagement"
+              value={stats.engagement.score}
+              suffix="/ 100"
+              styles={{ content: { color: stats.engagement.color, fontWeight: 700 } }}
+            />
+            <div style={{ marginTop: 4 }}>
+              <span style={{ color: stats.engagement.color, fontSize: 13, fontWeight: 600 }}>
+                {stats.engagement.label}
+              </span>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={5}>
+          <Card>
+            <Statistic
+              title="GPA"
+              value={stats.gpa}
               prefix={<TrophyOutlined />}
-              precision={1}
-              valueStyle={{
-                color: stats.avgGrade >= 70 ? "#52c41a" : stats.avgGrade >= 50 ? "#faad14" : "#f5222d",
-              }}
+              precision={2}
+              suffix="/ 4.0"
+              styles={{ content: { color: stats.gpa >= 3.0 ? "#52c41a" : stats.gpa >= 2.0 ? "#faad14" : "#f5222d" } }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={5}>
+          <Card>
+            <Statistic
+              title="Средний балл"
+              value={stats.avgGrade}
+              precision={1}
+              suffix="/ 100"
+              styles={{ content: { color: stats.avgGrade >= 70 ? "#52c41a" : stats.avgGrade >= 50 ? "#faad14" : "#f5222d" } }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={5}>
           <Card>
             <Statistic
               title="Посещаемость"
               value={stats.attendancePct}
               suffix="%"
               prefix={<CheckCircleOutlined />}
-              valueStyle={{
-                color: stats.attendancePct >= 70 ? "#52c41a" : "#f5222d",
-              }}
+              styles={{ content: { color: stats.attendancePct >= 70 ? "#52c41a" : "#f5222d" } }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={4}>
           <Card>
             <Statistic
               title="Мероприятий"

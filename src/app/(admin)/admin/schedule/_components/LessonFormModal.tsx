@@ -144,18 +144,18 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
           {(fields, { add, remove }) => (
             <>
               <label style={{ fontWeight: 500, display: "block", marginBottom: 8 }}>Временные слоты</label>
-              {fields.map((field) => (
-                <Space key={field.key} align="start" style={{ marginBottom: 8 }}>
+              {fields.map(({ key, ...restField }) => (
+                <Space key={key} align="start" style={{ marginBottom: 8 }}>
                   <Form.Item
-                    {...field}
-                    name={[field.name, "time"]}
+                    {...restField}
+                    name={[restField.name, "time"]}
                     rules={[{ required: true, message: "Укажите время" }]}
                     style={{ marginBottom: 0 }}
                   >
                     <TimePicker.RangePicker format="HH:mm" minuteStep={30} />
                   </Form.Item>
                   {fields.length > 1 && (
-                    <MinusCircleOutlined onClick={() => remove(field.name)} style={{ color: "#ff4d4f", marginTop: 8 }} />
+                    <MinusCircleOutlined onClick={() => remove(restField.name)} style={{ color: "#ff4d4f", marginTop: 8 }} />
                   )}
                 </Space>
               ))}
