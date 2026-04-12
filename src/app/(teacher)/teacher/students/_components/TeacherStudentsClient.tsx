@@ -10,14 +10,12 @@ import {
   Tag,
 } from "antd";
 import {
-  LineChartOutlined,
-  BarChartOutlined,
   UserOutlined,
   SearchOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import PerformanceModal from "./PerformanceModal";
-import AttendanceModal from "./AttendanceModal";
+import StudentDetailDrawer from "./StudentDetailDrawer";
 
 interface Student {
   id: string;
@@ -33,8 +31,7 @@ export default function TeacherStudentsClient({
   students: Student[];
 }) {
   const [search, setSearch] = useState("");
-  const [perfStudentId, setPerfStudentId] = useState<string | null>(null);
-  const [attStudentId, setAttStudentId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const filtered = students.filter(
     (s) =>
@@ -42,55 +39,42 @@ export default function TeacherStudentsClient({
       s.email.includes(search)
   );
 
+  const selectedStudent = students.find((s) => s.id === selectedId);
+
   const columns: ColumnsType<Student> = [
     {
-      title: "Фото",
-      dataIndex: "face_photo_url",
-      key: "photo",
-      width: 60,
-      render: () => <Avatar icon={<UserOutlined />} />,
-    },
-    {
-      title: "Имя",
-      dataIndex: "full_name",
-      key: "full_name",
-      sorter: (a, b) => a.full_name.localeCompare(b.full_name),
-    },
-    {
-      title: "Телефон",
-      dataIndex: "email",
-      key: "email",
-      width: 160,
+      title: "Студент",
+      key: "student",
+      render: (_, record) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Avatar icon={<UserOutlined />} size={36} />
+          <div>
+            <div style={{ fontWeight: 600, lineHeight: 1.2 }}>{record.full_name}</div>
+            <div style={{ fontSize: 12, color: "#8c8c8c" }}>{record.email}</div>
+          </div>
+        </div>
+      ),
     },
     {
       title: "Курс",
       dataIndex: "course_year",
       key: "course_year",
-      width: 80,
+      width: 90,
       render: (v: number | null) =>
         v ? <Tag>{v} курс</Tag> : <Tag>—</Tag>,
     },
     {
-      title: "Действия",
+      title: "",
       key: "actions",
-      width: 220,
+      width: 140,
       render: (_, record) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          <Button
-            size="small"
-            icon={<LineChartOutlined />}
-            onClick={() => setPerfStudentId(record.id)}
-          >
-            Оценки
-          </Button>
-          <Button
-            size="small"
-            icon={<BarChartOutlined />}
-            onClick={() => setAttStudentId(record.id)}
-          >
-            Посещаемость
-          </Button>
-        </div>
+        <Button
+          size="small"
+          icon={<EyeOutlined />}
+          onClick={() => setSelectedId(record.id)}
+        >
+          Профиль студента
+        </Button>
       ),
     },
   ];
@@ -110,7 +94,7 @@ export default function TeacherStudentsClient({
         </Typography.Title>
         <Input
           prefix={<SearchOutlined />}
-          placeholder="Поиск по имени или телефону"
+          placeholder="Поиск по имени или email"
           style={{ width: 300 }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -124,18 +108,16 @@ export default function TeacherStudentsClient({
         rowKey="id"
         pagination={{ pageSize: 20 }}
         size="middle"
+        onRow={(record) => ({
+          style: { cursor: "pointer" },
+          onClick: () => setSelectedId(record.id),
+        })}
       />
 
-      <PerformanceModal
-        studentId={perfStudentId}
-        studentName={students.find((s) => s.id === perfStudentId)?.full_name ?? ""}
-        onClose={() => setPerfStudentId(null)}
-      />
-
-      <AttendanceModal
-        studentId={attStudentId}
-        studentName={students.find((s) => s.id === attStudentId)?.full_name ?? ""}
-        onClose={() => setAttStudentId(null)}
+      <StudentDetailDrawer
+        studentId={selectedId}
+        studentName={selectedStudent?.full_name ?? ""}
+        onClose={() => setSelectedId(null)}
       />
     </div>
   );

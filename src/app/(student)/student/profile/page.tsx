@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveUserIdFromCookies } from "@/lib/impersonation";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import StudentProfileClient from "./_components/StudentProfileClient";
+import RecommendationList from "@/components/recommendations/RecommendationList";
 import { calculateGpa } from "@/lib/utils";
 import { calculateEngagement } from "@/lib/engagement";
 import { fetchCheckinAverage } from "../_actions/checkin-actions";
@@ -78,16 +80,21 @@ export default async function StudentProfilePage() {
   }
 
   return (
-    <StudentProfileClient
-      profile={profile}
-      photoSignedUrl={photoSignedUrl}
-      stats={{
-        avgGrade,
-        gpa,
-        attendancePct,
-        signupCount: signupCount ?? 0,
-        engagement,
-      }}
-    />
+    <>
+      <Suspense fallback={null}>
+        <RecommendationList userId={effectiveId} />
+      </Suspense>
+      <StudentProfileClient
+        profile={profile}
+        photoSignedUrl={photoSignedUrl}
+        stats={{
+          avgGrade,
+          gpa,
+          attendancePct,
+          signupCount: signupCount ?? 0,
+          engagement,
+        }}
+      />
+    </>
   );
 }

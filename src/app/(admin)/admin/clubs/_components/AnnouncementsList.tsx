@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { List, Tag, Typography, Spin, Empty } from "antd";
+import { useEffect, useState } from "react";
+import { Tag, Typography, Spin, Empty, Card } from "antd";
 import { getAnnouncementsForClub } from "../../_actions/club-actions";
 import { formatDateTime } from "@/lib/utils";
 
@@ -20,26 +20,20 @@ export default function AnnouncementsList({ clubId }: { clubId: string }) {
   if (items.length === 0) return <Empty description="Нет объявлений" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
 
   return (
-    <List
-      size="small"
-      dataSource={items}
-      renderItem={(item) => {
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {items.map((item, i) => {
         const signups = (item.event_signups as unknown[]) ?? [];
         return (
-          <List.Item>
-            <List.Item.Meta
-              title={<Typography.Text strong>{item.title as string}</Typography.Text>}
-              description={
-                <>
-                  <div>{formatDateTime(item.starts_at as string)}</div>
-                  {item.venue && <div>Место: {item.venue as string}</div>}
-                  <Tag color="blue" style={{ marginTop: 4 }}>{signups.length} записей</Tag>
-                </>
-              }
-            />
-          </List.Item>
+          <Card key={i} size="small" styles={{ body: { padding: "8px 12px" } }}>
+            <Typography.Text strong>{item.title as string}</Typography.Text>
+            <div style={{ fontSize: 13, color: "#666", marginTop: 2 }}>
+              {formatDateTime(item.starts_at as string)}
+              {item.venue ? <> · Место: {String(item.venue)}</> : null}
+            </div>
+            <Tag color="blue" style={{ marginTop: 4 }}>{signups.length} записей</Tag>
+          </Card>
         );
-      }}
-    />
+      })}
+    </div>
   );
 }

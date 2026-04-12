@@ -1,8 +1,19 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { getEffectiveUserIdFromCookies } from "@/lib/impersonation";
 import { revalidatePath } from "next/cache";
+import { calculateGpa, scoreToLetter } from "@/lib/utils";
+import { calculateEngagement } from "@/lib/engagement";
+
+function serviceRole() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
 
 // ─── Helpers ───────────────────────────────────────────────
 async function getTeacherId() {
@@ -378,4 +389,189 @@ export async function fetchFaceIdData(lessonId: string) {
   const threshold = config?.value ? parseFloat(config.value) : 0.6;
 
   return { students: studentList, signedUrls, threshold };
+}
+
+// ─── Full student profile for teacher drawer ───────────────
+export async function fetchStudentFullProfile(studentId: string) {
+  const { supabase, effectiveId } = await getTeacherId();
+  const svc = serviceRole();
+
+  // Profile
+  const { data: profile } = await svc
+    .from("users")
+    .select("id, full_name, email, course_year, face_photo_url, created_at")
+    .eq("id", studentId)
+    .single();
+
+  if (!profile) return null;
+
+  // Signed photo URL
+  let photoSignedUrl: string | null = null;
+  if (profile.face_photo_url) {
+    const { data: signed } = await supabase.storage
+      .from("student-photos")
+      .createSignedUrl(profile.face_photo_url, 3600);
+    photoSignedUrl = signed?.signedUrl ?? null;
+  }
+
+  // All grades for this student in teacher's lessons
+  const { data: gradesRaw } = await supabase
+    .from("grades")
+    .select("score, graded_at, lessons!inner(subject_id, teacher_id, starts_at, subjects(name))")
+    .eq("student_id", studentId)
+    .eq("lessons.teacher_id", effectiveId)
+    .not("score", "is", null)
+    .order("graded_at", { ascending: true });
+
+  const grades = (gradesRaw ?? []).map((g) => {
+    const lesson = g.lessons as unknown as {
+      subject_id: string;
+      starts_at: string;
+      subjects: { name: string } | null;
+    };
+    return {
+      score: g.score as number,
+      graded_at: g.graded_at as string,
+      subjectId: lesson.subject_id,
+      subjectName: lesson.subjects?.name ?? "—",
+      starts_at: lesson.starts_at,
+    };
+  });
+
+  // Attendance in teacher's lessons
+  const { data: attRaw } = await supabase
+    .from("attendance")
+    .select("status, marked_at, lessons!inner(subject_id, teacher_id, starts_at, subjects(name))")
+    .eq("student_id", studentId)
+    .eq("lessons.teacher_id", effectiveId)
+    .order("marked_at", { ascending: false });
+
+  const attendance = (attRaw ?? []).map((a) => {
+    const lesson = a.lessons as unknown as {
+      subject_id: string;
+      starts_at: string;
+      subjects: { name: string } | null;
+    };
+    return {
+      status: a.status as "present" | "absent",
+      marked_at: a.marked_at as string,
+      subjectId: lesson.subject_id,
+      subjectName: lesson.subjects?.name ?? "—",
+      starts_at: lesson.starts_at,
+    };
+  });
+
+  const attTotal = attendance.length;
+  const attPresent = attendance.filter((a) => a.status === "present").length;
+  const attendancePct = attTotal > 0 ? Math.round((attPresent / attTotal) * 100 * 10) / 10 : 0;
+
+  // GPA & avg
+  const scores = grades.map((g) => g.score);
+  const gpa = calculateGpa(scores);
+  const avgGrade = scores.length > 0 ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10 : 0;
+
+  // Grade by subject (for chart)
+  const subjectGradeMap = new Map<string, { name: string; scores: { score: number; date: string }[] }>();
+  for (const g of grades) {
+    const entry = subjectGradeMap.get(g.subjectId) ?? { name: g.subjectName, scores: [] };
+    entry.scores.push({ score: g.score, date: g.graded_at });
+    subjectGradeMap.set(g.subjectId, entry);
+  }
+  const subjectGrades = Array.from(subjectGradeMap.entries()).map(([id, v]) => ({ id, name: v.name, scores: v.scores }));
+
+  // Attendance by subject
+  const subjectAttMap = new Map<string, { name: string; total: number; present: number }>();
+  for (const a of attendance) {
+    const entry = subjectAttMap.get(a.subjectId) ?? { name: a.subjectName, total: 0, present: 0 };
+    entry.total++;
+    if (a.status === "present") entry.present++;
+    subjectAttMap.set(a.subjectId, entry);
+  }
+  const subjectAttendance = Array.from(subjectAttMap.entries()).map(([id, v]) => ({
+    id,
+    name: v.name,
+    total: v.total,
+    present: v.present,
+    pct: v.total > 0 ? Math.round((v.present / v.total) * 100) : 0,
+  }));
+
+  // Event signups count (global, not filtered by teacher)
+  const { count: signupCount } = await svc
+    .from("event_signups")
+    .select("*", { count: "exact", head: true })
+    .eq("student_id", studentId);
+
+  // Latest check-in
+  const { data: checkins } = await svc
+    .from("student_checkins")
+    .select("week_start, stress_level, motivation_level, workload_feeling, understanding, satisfaction, notes, ai_summary")
+    .eq("student_id", studentId)
+    .order("week_start", { ascending: false })
+    .limit(4);
+
+  let checkinAvg: number | null = null;
+  if (checkins && checkins.length > 0) {
+    let total = 0;
+    for (const c of checkins) {
+      total += ((10 - c.stress_level) + c.motivation_level + (10 - c.workload_feeling) + c.understanding + c.satisfaction) / 5;
+    }
+    checkinAvg = Math.round((total / checkins.length) * 10) / 10;
+  }
+
+  // Engagement
+  const engagement = calculateEngagement({
+    attendancePct,
+    gpa,
+    eventSignups: signupCount ?? 0,
+    checkinAvg,
+  });
+
+  // Academic health score
+  const academicHealth = Math.round(
+    attendancePct * 0.4 + (gpa / 4.0) * 100 * 0.4 + Math.min((signupCount ?? 0) / 5, 1) * 100 * 0.2
+  );
+
+  // Active recommendations (service role bypasses RLS)
+  const { data: recsRaw } = await svc
+    .from("recommendations")
+    .select("id, rule_id, category, next_action, priority_score, title, action, expected_effect, deadline")
+    .eq("user_id", studentId)
+    .is("resolved_at", null)
+    .is("dismissed_at", null)
+    .order("priority_score", { ascending: false })
+    .limit(3);
+
+  // Latest grade with letter
+  const latestGrade = grades.length > 0 ? grades[grades.length - 1].score : null;
+  const latestGradeLetter = latestGrade !== null ? scoreToLetter(latestGrade) : null;
+
+  return {
+    profile,
+    photoSignedUrl,
+    stats: {
+      avgGrade,
+      gpa,
+      attendancePct,
+      signupCount: signupCount ?? 0,
+      engagement,
+      academicHealth,
+      latestGrade,
+      latestGradeLetter,
+    },
+    subjectGrades,
+    subjectAttendance,
+    checkins: checkins ?? [],
+    checkinAvg,
+    recommendations: (recsRaw ?? []) as Array<{
+      id: string;
+      rule_id: string;
+      category: "academic" | "social" | "admin";
+      next_action: string;
+      priority_score: number;
+      title: string | null;
+      action: string | null;
+      expected_effect: string | null;
+      deadline: string | null;
+    }>,
+  };
 }

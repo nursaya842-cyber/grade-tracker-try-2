@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveUserIdFromCookies } from "@/lib/impersonation";
+import { generateText } from "@/lib/gemini";
 import { revalidatePath } from "next/cache";
 
 function getWeekStart(date: Date = new Date()): string {
@@ -44,6 +45,19 @@ export async function submitCheckin(values: {
 
   const weekStart = getWeekStart();
 
+  // AI analysis of free-text notes
+  let aiSummary: string | null = null;
+  if (values.notes && values.notes.trim().length > 10) {
+    try {
+      aiSummary = await generateText(
+        `Проанализируй заметку студента из еженедельного check-in и напиши краткое резюме (1 предложение) на русском: тональность + основная тема. Заметка: "${values.notes}"`,
+        "Ты психологический консультант KBTU. Отвечай кратко, нейтрально, на русском."
+      );
+    } catch {
+      // AI is optional — don't block check-in submission
+    }
+  }
+
   const { error } = await supabase.from("student_checkins").upsert(
     {
       student_id: effectiveId,
@@ -54,6 +68,7 @@ export async function submitCheckin(values: {
       understanding: values.understanding,
       satisfaction: values.satisfaction,
       notes: values.notes ?? null,
+      ai_summary: aiSummary,
     },
     { onConflict: "student_id,week_start" }
   );

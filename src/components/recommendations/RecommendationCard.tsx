@@ -1,43 +1,79 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Tag, Button, App } from "antd";
-import { CloseOutlined } from "@ant-design/icons";
+import { Card, Tag, Button, App, Typography, Space } from "antd";
+import {
+  ExclamationCircleFilled,
+  WarningFilled,
+  CheckCircleFilled,
+  ClockCircleOutlined,
+  ThunderboltOutlined,
+} from "@ant-design/icons";
 import { dismissRecommendation } from "./recommendation-actions";
 
-interface Recommendation {
+export interface Recommendation {
   id: string;
   rule_id: string;
   category: "academic" | "social" | "admin";
   next_action: string;
   priority_score: number;
+  title: string | null;
+  action: string | null;
+  expected_effect: string | null;
+  deadline: string | null;
 }
 
-const CATEGORY_CONFIG = {
-  academic: { color: "blue", label: "Академик" },
+const CATEGORY_CONFIG: Record<string, { color: string; label: string }> = {
+  academic: { color: "blue", label: "Академическое" },
   social: { color: "green", label: "Социальное" },
   admin: { color: "orange", label: "Административное" },
 };
 
-function getPriorityColor(score: number): string {
-  if (score > 0.7) return "#f5222d";
-  if (score > 0.4) return "#faad14";
-  return "#52c41a";
+function getPriorityConfig(score: number): {
+  color: string;
+  icon: React.ReactNode;
+  label: string;
+  tagColor: string;
+} {
+  if (score > 0.7) {
+    return {
+      color: "#f5222d",
+      icon: <ExclamationCircleFilled style={{ color: "#f5222d", fontSize: 18 }} />,
+      label: "Высокий приоритет",
+      tagColor: "red",
+    };
+  }
+  if (score > 0.4) {
+    return {
+      color: "#faad14",
+      icon: <WarningFilled style={{ color: "#faad14", fontSize: 18 }} />,
+      label: "Средний приоритет",
+      tagColor: "orange",
+    };
+  }
+  return {
+    color: "#52c41a",
+    icon: <CheckCircleFilled style={{ color: "#52c41a", fontSize: 18 }} />,
+    label: "Низкий приоритет",
+    tagColor: "green",
+  };
 }
 
-export default function RecommendationCard({
-  rec,
-}: {
-  rec: Recommendation;
-}) {
+function boldMarkdown(text: string): string {
+  return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+export default function RecommendationCard({ rec }: { rec: Recommendation }) {
   const { message } = App.useApp();
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   if (dismissed) return null;
 
-  const cat = CATEGORY_CONFIG[rec.category];
-  const borderColor = getPriorityColor(rec.priority_score);
+  const cat = CATEGORY_CONFIG[rec.category] ?? CATEGORY_CONFIG.academic;
+  const priority = getPriorityConfig(rec.priority_score);
+
+  const title = rec.title ?? rec.next_action.split(".")[0].replace(/\*\*/g, "");
 
   const handleDismiss = async () => {
     setLoading(true);
@@ -53,32 +89,60 @@ export default function RecommendationCard({
   return (
     <Card
       size="small"
-      style={{
-        borderLeft: `4px solid ${borderColor}`,
-        marginBottom: 8,
-      }}
-      styles={{ body: { padding: "8px 12px" } }}
+      style={{ borderLeft: `4px solid ${priority.color}`, marginBottom: 8 }}
+      styles={{ body: { padding: "12px 16px" } }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div style={{ flex: 1 }}>
-          <Tag color={cat.color} style={{ marginBottom: 4 }}>
-            {cat.label}
-          </Tag>
-          <div
-            style={{ fontSize: 13, lineHeight: 1.4 }}
-            dangerouslySetInnerHTML={{
-              __html: rec.next_action.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"),
-            }}
-          />
-        </div>
+      {/* Header row */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <Space size={8} align="start" style={{ flex: 1, flexWrap: "wrap" }}>
+          {priority.icon}
+          <Typography.Text strong style={{ fontSize: 14 }}>
+            {title}
+          </Typography.Text>
+          <Tag color={cat.color} style={{ margin: 0 }}>{cat.label}</Tag>
+          <Tag color={priority.tagColor} style={{ margin: 0 }}>{priority.label}</Tag>
+        </Space>
         <Button
-          type="text"
+          type="primary"
           size="small"
-          icon={<CloseOutlined />}
+          icon={<ThunderboltOutlined />}
           onClick={handleDismiss}
           loading={loading}
-          style={{ marginLeft: 8, flexShrink: 0 }}
-        />
+          style={{ flexShrink: 0 }}
+        >
+          Принять
+        </Button>
+      </div>
+
+      {/* Description */}
+      <div
+        style={{ fontSize: 13, color: "#595959", marginTop: 8, lineHeight: 1.5 }}
+        dangerouslySetInnerHTML={{ __html: boldMarkdown(rec.next_action) }}
+      />
+
+      {/* Action */}
+      {rec.action && (
+        <div style={{ marginTop: 6, fontSize: 13 }}>
+          <Typography.Text type="secondary">Действие: </Typography.Text>
+          <Typography.Text>{rec.action}</Typography.Text>
+        </div>
+      )}
+
+      {/* Expected effect + deadline */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, flexWrap: "wrap", gap: 4 }}>
+        {rec.expected_effect && (
+          <Typography.Text style={{ fontSize: 12, color: "#52c41a" }}>
+            Ожидаемый эффект: {rec.expected_effect}
+          </Typography.Text>
+        )}
+        {rec.deadline && (
+          <Space size={4}>
+            <ClockCircleOutlined style={{ color: "#8c8c8c", fontSize: 12 }} />
+            <Typography.Text style={{ fontSize: 12, color: "#8c8c8c" }}>
+              Срок: {new Date(rec.deadline).toLocaleDateString("ru-RU")}
+            </Typography.Text>
+          </Space>
+        )}
       </div>
     </Card>
   );

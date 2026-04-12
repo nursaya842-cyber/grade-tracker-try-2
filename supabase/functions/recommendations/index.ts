@@ -5,12 +5,60 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface GeminiRec {
+  title: string;
+  description: string;
+  action: string;
+  expected_effect: string;
+}
+
 interface Recommendation {
   user_id: string;
   rule_id: string;
   category: "academic" | "social" | "admin";
   next_action: string;
   priority_score: number;
+  title: string;
+  action: string;
+  expected_effect: string;
+  deadline: string | null;
+}
+
+// ── Gemini REST helper ──────────────────────────────────────────────────────
+const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY") ?? "";
+const GEMINI_URL =
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+
+const SYSTEM_PROMPT =
+  "Ты куратор KBTU. Отвечай СТРОГО JSON без markdown-блоков. Поля: title (3-4 слова), description (1-2 предложения с конкретными данными), action (1 краткое конкретное действие), expected_effect (ожидаемый результат). Всё на русском, без воды.";
+
+async function callGemini(userPrompt: string): Promise<GeminiRec | null> {
+  if (!GEMINI_KEY) return null;
+  try {
+    const res = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: 256,
+          responseMimeType: "application/json",
+        },
+      }),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const raw = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    return JSON.parse(raw) as GeminiRec;
+  } catch {
+    return null;
+  }
+}
+
+function addDays(days: number): string {
+  return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
 }
 
 Deno.serve(async (req) => {
@@ -25,7 +73,7 @@ Deno.serve(async (req) => {
 
   const allRecs: Recommendation[] = [];
 
-  // ─── Get semester start for "30 days into semester" check ──
+  // ─── Semester start ─────────────────────────────────────────────────────
   const { data: semConfig } = await supabase
     .from("app_config")
     .select("value")
@@ -44,14 +92,13 @@ Deno.serve(async (req) => {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
 
-  // ─── Pre-fetch subject names ────────────────────────────
+  // ─── Lookup maps ─────────────────────────────────────────────────────────
   const { data: subjectRows } = await supabase
     .from("subjects")
     .select("id, name")
     .is("deleted_at", null);
   const subjectName = new Map((subjectRows ?? []).map((s) => [s.id, s.name]));
 
-  // ─── Pre-fetch teacher names ────────────────────────────
   const { data: teacherRows } = await supabase
     .from("users")
     .select("id, full_name")
@@ -59,9 +106,9 @@ Deno.serve(async (req) => {
     .is("deleted_at", null);
   const teacherName = new Map((teacherRows ?? []).map((t) => [t.id, t.full_name]));
 
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
   // STUDENT RULES
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
 
   const { data: students } = await supabase
     .from("users")
@@ -72,7 +119,7 @@ Deno.serve(async (req) => {
   for (const student of students ?? []) {
     const sid = student.id;
 
-    // ── R-01: Low attendance (< 70% in any subject, last 30d) ──
+    // ── R-01: Low attendance ───────────────────────────────────────────────
     const { data: attData } = await supabase
       .from("attendance")
       .select("status, lessons!inner(subject_id, teacher_id, starts_at, deleted_at)")
@@ -90,7 +137,6 @@ Deno.serve(async (req) => {
         bySubject.set(lesson.subject_id, entry);
       }
 
-      // Find worst subject
       let worstSubjId: string | null = null;
       let worstPct = 100;
       for (const [subjId, stats] of bySubject) {
@@ -106,7 +152,6 @@ Deno.serve(async (req) => {
         const sName = subjectName.get(worstSubjId) ?? "предмету";
         const tName = subjStats.teacherId ? teacherName.get(subjStats.teacherId) : null;
 
-        // Find next lesson for this subject
         const { data: nextLesson } = await supabase
           .from("lesson_students")
           .select("lessons!inner(starts_at, subject_id)")
@@ -125,17 +170,27 @@ Deno.serve(async (req) => {
           nextInfo = `. Следующее занятие: ${days[d.getDay()]}, ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
         }
 
+        const fallbackText = `По предмету **${sName}** посещаемость ${Math.round(worstPct)}%${tName ? ` (преп. ${tName})` : ""}${nextInfo}. Старайтесь не пропускать.`;
+
+        const ai = await callGemini(
+          `Студент имеет посещаемость ${Math.round(worstPct)}% по предмету "${sName}"${tName ? `, преподаватель ${tName}` : ""}${nextInfo}. Норма ≥70%.`
+        );
+
         allRecs.push({
           user_id: sid,
           rule_id: "R-01",
           category: "academic",
-          next_action: `По предмету **${sName}** посещаемость ${Math.round(worstPct)}%${tName ? ` (преп. ${tName})` : ""}${nextInfo}. Старайтесь не пропускать.`,
+          next_action: ai?.description ?? fallbackText,
           priority_score: 0.9,
+          title: ai?.title ?? "Улучшить посещаемость",
+          action: ai?.action ?? `Посетить все занятия по ${sName} на следующей неделе`,
+          expected_effect: ai?.expected_effect ?? "Повышение академической успеваемости на 10-15%",
+          deadline: addDays(7),
         });
       }
     }
 
-    // ── R-03: Grade decline (last 10 grades, slope < -5) ──
+    // ── R-03: Grade decline ────────────────────────────────────────────────
     const { data: gradeData } = await supabase
       .from("grades")
       .select("score, graded_at, lessons!inner(subject_id, teacher_id)")
@@ -155,7 +210,6 @@ Deno.serve(async (req) => {
       const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
       if (slope < -5) {
-        // Find the subject with most declining grades
         const subjCounts = new Map<string, number>();
         for (const g of gradeData) {
           const lesson = g.lessons as unknown as { subject_id: string; teacher_id: string | null };
@@ -163,8 +217,8 @@ Deno.serve(async (req) => {
         }
         let topSubjId = "";
         let topCount = 0;
-        for (const [sid2, cnt] of subjCounts) {
-          if (cnt > topCount) { topSubjId = sid2; topCount = cnt; }
+        for (const [s2, cnt] of subjCounts) {
+          if (cnt > topCount) { topSubjId = s2; topCount = cnt; }
         }
 
         const sName = subjectName.get(topSubjId) ?? "предметам";
@@ -172,17 +226,27 @@ Deno.serve(async (req) => {
         const lastLesson = gradeData[gradeData.length - 1].lessons as unknown as { teacher_id: string | null };
         const tName = lastLesson.teacher_id ? teacherName.get(lastLesson.teacher_id) : null;
 
+        const fallbackText = `Оценки снижаются по **${sName}**: ${lastThree}${tName ? `. Обратитесь к преподавателю **${tName}**` : ". Обратитесь к преподавателю за консультацией"}.`;
+
+        const ai = await callGemini(
+          `Оценки студента снижаются по предмету "${sName}", последние три: ${lastThree}. Тренд: ${slope.toFixed(1)} балл/урок${tName ? `. Преподаватель: ${tName}` : ""}.`
+        );
+
         allRecs.push({
           user_id: sid,
           rule_id: "R-03",
           category: "academic",
-          next_action: `Оценки снижаются по **${sName}**: ${lastThree}${tName ? `. Обратитесь к преподавателю **${tName}**` : ". Обратитесь к преподавателю за консультацией"}.`,
+          next_action: ai?.description ?? fallbackText,
           priority_score: 0.8,
+          title: ai?.title ?? "Повысить успеваемость",
+          action: ai?.action ?? `Записаться на консультацию по ${sName}`,
+          expected_effect: ai?.expected_effect ?? "Стабилизация оценок на уровне 70+",
+          deadline: addDays(14),
         });
       }
     }
 
-    // ── R-04: No social activity (0 signups, >30d into semester) ──
+    // ── R-04: No social activity ───────────────────────────────────────────
     if (daysSinceSemester > 30) {
       const { count } = await supabase
         .from("event_signups")
@@ -190,7 +254,6 @@ Deno.serve(async (req) => {
         .eq("student_id", sid);
 
       if ((count ?? 0) === 0) {
-        // Find clubs with upcoming events
         const { data: upcomingEvents } = await supabase
           .from("club_announcements")
           .select("title, clubs!inner(name), starts_at")
@@ -199,33 +262,42 @@ Deno.serve(async (req) => {
           .order("starts_at", { ascending: true })
           .limit(1);
 
-        let eventHint = "Посмотрите объявления клубов!";
+        let eventHint = "";
+        let nearestEvent = "";
         if (upcomingEvents && upcomingEvents.length > 0) {
           const ev = upcomingEvents[0];
           const club = (ev.clubs as unknown as { name: string })?.name;
           const d = new Date(ev.starts_at);
-          eventHint = `Ближайшее: **${ev.title}** (${club}) — ${d.toLocaleDateString("ru-RU")}.`;
+          nearestEvent = `"${ev.title}" (${club}) — ${d.toLocaleDateString("ru-RU")}`;
+          eventHint = nearestEvent;
         }
+
+        const fallbackText = `Вы ещё не участвовали в клубных мероприятиях. ${eventHint ? `Ближайшее: **${eventHint}**.` : "Посмотрите объявления клубов!"}`;
+
+        const ai = await callGemini(
+          `Студент не участвовал ни в одном мероприятии за ${daysSinceSemester} дней семестра.${nearestEvent ? ` Ближайшее событие: ${nearestEvent}.` : ""}`
+        );
 
         allRecs.push({
           user_id: sid,
           rule_id: "R-04",
           category: "social",
-          next_action: `Вы ещё не участвовали в клубных мероприятиях. ${eventHint}`,
+          next_action: ai?.description ?? fallbackText,
           priority_score: 0.5,
+          title: ai?.title ?? "Присоединиться к клубу",
+          action: ai?.action ?? "Записаться на ближайшее мероприятие клуба",
+          expected_effect: ai?.expected_effect ?? "Улучшение soft skills, расширение круга общения",
+          deadline: addDays(14),
         });
       }
     }
 
-    // ── R-07: Low Engagement Score (< 40) ──
-    // Compute engagement inline (same formula as src/lib/engagement.ts)
+    // ── R-07: Low Engagement Score ─────────────────────────────────────────
     {
-      // Attendance %
       const totalAtt = attData?.length ?? 0;
       const presentAtt = attData?.filter((a) => a.status === "present").length ?? 0;
       const attPct = totalAtt > 0 ? (presentAtt / totalAtt) * 100 : 50;
 
-      // GPA
       const allScores = (gradeData ?? []).map((g) => g.score as number).filter((s) => s != null);
       const gpaPoints = allScores.map((s) => {
         if (s >= 95) return 4.0;
@@ -242,13 +314,11 @@ Deno.serve(async (req) => {
       });
       const gpa = gpaPoints.length > 0 ? gpaPoints.reduce((a, b) => a + b, 0) / gpaPoints.length : 0;
 
-      // Event signups
       const { count: signupCount } = await supabase
         .from("event_signups")
         .select("*", { count: "exact", head: true })
         .eq("student_id", sid);
 
-      // Check-in average (last 4)
       const { data: checkins } = await supabase
         .from("student_checkins")
         .select("stress_level, motivation_level, workload_feeling, understanding, satisfaction")
@@ -273,26 +343,36 @@ Deno.serve(async (req) => {
       );
 
       if (engagement < 40) {
-        const tips: string[] = [];
-        if (attPct < 70) tips.push("посещайте занятия регулярно");
-        if (gpa < 2.0) tips.push("уделите внимание учёбе");
-        if ((signupCount ?? 0) === 0) tips.push("запишитесь на мероприятие клуба");
-        if (!checkins || checkins.length === 0) tips.push("заполните еженедельный опрос");
+        const weakAreas: string[] = [];
+        if (attPct < 70) weakAreas.push(`посещаемость ${Math.round(attPct)}%`);
+        if (gpa < 2.0) weakAreas.push(`GPA ${gpa.toFixed(2)}`);
+        if ((signupCount ?? 0) === 0) weakAreas.push("нет активности в клубах");
+        if (!checkins || checkins.length === 0) weakAreas.push("нет данных check-in");
+
+        const fallbackText = `Индекс вовлечённости ${engagement}/100. Слабые стороны: ${weakAreas.join(", ")}.`;
+
+        const ai = await callGemini(
+          `Индекс вовлечённости студента низкий: ${engagement}/100. Слабые стороны: ${weakAreas.join(", ")}.`
+        );
 
         allRecs.push({
           user_id: sid,
           rule_id: "R-07",
           category: "academic",
-          next_action: `Ваш индекс вовлечённости низкий (${engagement}/100). Рекомендуем: ${tips.length > 0 ? tips.join(", ") : "обратитесь к куратору"}.`,
+          next_action: ai?.description ?? fallbackText,
           priority_score: 0.95,
+          title: ai?.title ?? "Повысить вовлечённость",
+          action: ai?.action ?? "Обратитесь к куратору для составления плана",
+          expected_effect: ai?.expected_effect ?? "Рост индекса вовлечённости на 15+ пунктов",
+          deadline: addDays(7),
         });
       }
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
   // TEACHER RULES
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
 
   const { data: teachers } = await supabase
     .from("users")
@@ -303,7 +383,7 @@ Deno.serve(async (req) => {
   for (const teacher of teachers ?? []) {
     const tid = teacher.id;
 
-    // ── R-02: Grade entry overdue (>48h) with specific subject ──
+    // ── R-02: Grade entry overdue ──────────────────────────────────────────
     const { data: overdue } = await supabase
       .from("lessons")
       .select("id, subject_id, ends_at")
@@ -323,12 +403,16 @@ Deno.serve(async (req) => {
         user_id: tid,
         rule_id: "R-02",
         category: "academic",
-        next_action: `${overdue.length} урок(ов) без отчёта по **${subjects.join(", ")}** (старейший: ${hoursAgo}ч назад). Заполните отчёт.`,
+        next_action: `${overdue.length} урок(ов) без отчёта по **${subjects.join(", ")}** (старейший: ${hoursAgo}ч назад).`,
         priority_score: 0.8,
+        title: "Закрыть отчёты",
+        action: `Заполнить отчёты по ${subjects.join(", ")}`,
+        expected_effect: "Актуальные данные для студентов и администрации",
+        deadline: addDays(1),
       });
     }
 
-    // ── R-05: >3 pending reports ──
+    // ── R-05: >3 pending reports ───────────────────────────────────────────
     const { count: pendingCount } = await supabase
       .from("lessons")
       .select("*", { count: "exact", head: true })
@@ -344,13 +428,17 @@ Deno.serve(async (req) => {
         category: "admin",
         next_action: `**${pendingCount}** незакрытых отчётов. Пожалуйста, закройте отчёты как можно скорее.`,
         priority_score: 0.9,
+        title: "Незакрытые отчёты",
+        action: "Открыть раздел «Мои уроки» и закрыть все просроченные отчёты",
+        expected_effect: "Соответствие требованиям администрации",
+        deadline: addDays(2),
       });
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
   // ADMIN RULES
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
 
   const { data: admins } = await supabase
     .from("users")
@@ -358,7 +446,7 @@ Deno.serve(async (req) => {
     .eq("role", "admin")
     .is("deleted_at", null);
 
-  // ── R-06: Unassigned lessons ──
+  // ── R-06: Unassigned lessons ───────────────────────────────────────────
   const { data: unassigned } = await supabase
     .from("lessons")
     .select("id, subject_id, starts_at")
@@ -379,13 +467,17 @@ Deno.serve(async (req) => {
         category: "admin",
         next_action: `**${unassigned.length}** уроков без преподавателя (${subjects.join(", ")}). Ближайший: ${nearestDate}.`,
         priority_score: 0.85,
+        title: "Назначить преподавателей",
+        action: `Назначить преподавателя на уроки: ${subjects.join(", ")}`,
+        expected_effect: "Студенты не останутся без занятий",
+        deadline: nearestDate,
       });
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // UPSERT: top 3 per user, resolve old ones
-  // ═══════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════════
+  // UPSERT: top 3 per user
+  // ═══════════════════════════════════════════════════════════════════════
 
   const byUser = new Map<string, Recommendation[]>();
   for (const rec of allRecs) {
@@ -411,6 +503,10 @@ Deno.serve(async (req) => {
           category: rec.category,
           next_action: rec.next_action,
           priority_score: rec.priority_score,
+          title: rec.title,
+          action: rec.action,
+          expected_effect: rec.expected_effect,
+          deadline: rec.deadline,
           resolved_at: null,
         },
         { onConflict: "user_id,rule_id" }
@@ -421,7 +517,7 @@ Deno.serve(async (req) => {
     // Resolve rules that no longer fire
     await supabase
       .from("recommendations")
-      .update({ resolved_at: now })
+      .update({ resolved_at: new Date().toISOString() })
       .eq("user_id", userId)
       .is("resolved_at", null)
       .is("dismissed_at", null)
@@ -436,7 +532,7 @@ Deno.serve(async (req) => {
     if (!allUserIds.has(u.id)) {
       const { count } = await supabase
         .from("recommendations")
-        .update({ resolved_at: now })
+        .update({ resolved_at: new Date().toISOString() })
         .eq("user_id", u.id)
         .is("resolved_at", null)
         .is("dismissed_at", null);

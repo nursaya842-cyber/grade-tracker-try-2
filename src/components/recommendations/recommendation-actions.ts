@@ -33,7 +33,7 @@ export async function fetchRecommendations(userId: string) {
 
   const { data } = await supabase
     .from("recommendations")
-    .select("id, rule_id, category, next_action, priority_score")
+    .select("id, rule_id, category, next_action, priority_score, title, action, expected_effect, deadline")
     .eq("user_id", userId)
     .is("resolved_at", null)
     .is("dismissed_at", null)

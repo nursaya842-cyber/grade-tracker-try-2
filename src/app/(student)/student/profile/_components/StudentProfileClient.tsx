@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   Card,
   Descriptions,
-  Statistic,
   Row,
   Col,
   Button,
@@ -15,13 +14,12 @@ import {
   Avatar,
   App,
   Space,
+  Progress,
+  Tag,
 } from "antd";
 import {
   LockOutlined,
   UserOutlined,
-  TrophyOutlined,
-  CheckCircleOutlined,
-  CalendarOutlined,
 } from "@ant-design/icons";
 import { changeStudentPassword } from "../../_actions/student-actions";
 import { formatDate } from "@/lib/utils";
@@ -56,6 +54,18 @@ interface Props {
   stats: Stats;
 }
 
+function getRiskBadge(segment: string): { label: string; color: string } {
+  if (segment === "at-risk") return { label: "Уровень риска: Высокий", color: "red" };
+  if (segment === "declining") return { label: "Уровень риска: Средний", color: "orange" };
+  return { label: "Уровень риска: Низкий", color: "green" };
+}
+
+function getProgressColor(value: number, thresholds: [number, number]): string {
+  if (value >= thresholds[1]) return "#52c41a";
+  if (value >= thresholds[0]) return "#faad14";
+  return "#f5222d";
+}
+
 export default function StudentProfileClient({
   profile,
   photoSignedUrl,
@@ -65,6 +75,8 @@ export default function StudentProfileClient({
   const [pwdOpen, setPwdOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+
+  const risk = getRiskBadge(stats.engagement.segment);
 
   const handleChangePassword = async (values: {
     currentPassword: string;
@@ -86,68 +98,80 @@ export default function StudentProfileClient({
     }
   };
 
+  const academicHealth = Math.round(
+    stats.attendancePct * 0.4 + (stats.gpa / 4.0) * 100 * 0.4 + Math.min(stats.signupCount / 5, 1) * 100 * 0.2
+  );
+
   return (
     <div>
-      <Typography.Title level={4}>Профиль</Typography.Title>
+      {/* Title row with risk badge */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <Typography.Title level={4} style={{ margin: 0 }}>Личный кабинет студента</Typography.Title>
+        <Tag color={risk.color} style={{ fontSize: 13, padding: "4px 12px" }}>
+          {risk.label}
+        </Tag>
+      </div>
 
-      {/* Mini-stats */}
+      {/* Stats cards with progress bars */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={5}>
-          <Card>
-            <Statistic
-              title="Engagement"
-              value={stats.engagement.score}
-              suffix="/ 100"
-              styles={{ content: { color: stats.engagement.color, fontWeight: 700 } }}
-            />
-            <div style={{ marginTop: 4 }}>
-              <span style={{ color: stats.engagement.color, fontSize: 13, fontWeight: 600 }}>
-                {stats.engagement.label}
-              </span>
+        <Col xs={24} sm={12} lg={6}>
+          <Card size="small">
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Academic Health Score</Typography.Text>
+            <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginTop: 4 }}>
+              {academicHealth}
             </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={5}>
-          <Card>
-            <Statistic
-              title="GPA"
-              value={stats.gpa}
-              prefix={<TrophyOutlined />}
-              precision={2}
-              suffix="/ 4.0"
-              styles={{ content: { color: stats.gpa >= 3.0 ? "#52c41a" : stats.gpa >= 2.0 ? "#faad14" : "#f5222d" } }}
+            <Progress
+              percent={academicHealth}
+              showInfo={false}
+              strokeColor={getProgressColor(academicHealth, [50, 75])}
+              style={{ marginTop: 8, marginBottom: 0 }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={5}>
-          <Card>
-            <Statistic
-              title="Средний балл"
-              value={stats.avgGrade}
-              precision={1}
-              suffix="/ 100"
-              styles={{ content: { color: stats.avgGrade >= 70 ? "#52c41a" : stats.avgGrade >= 50 ? "#faad14" : "#f5222d" } }}
+        <Col xs={24} sm={12} lg={6}>
+          <Card size="small">
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Средний балл (GPA)</Typography.Text>
+            <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginTop: 4, color: getProgressColor(stats.gpa / 4.0 * 100, [50, 75]) }}>
+              {stats.gpa.toFixed(1)}
+            </div>
+            <Progress
+              percent={Math.round(stats.gpa / 4.0 * 100)}
+              showInfo={false}
+              strokeColor={getProgressColor(stats.gpa / 4.0 * 100, [50, 75])}
+              style={{ marginTop: 8, marginBottom: 0 }}
+            />
+            <Typography.Text type="secondary" style={{ fontSize: 11 }}>Цель: 4.0</Typography.Text>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card size="small">
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Посещаемость</Typography.Text>
+            <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginTop: 4, color: getProgressColor(stats.attendancePct, [60, 80]) }}>
+              {stats.attendancePct}%
+            </div>
+            <Progress
+              percent={stats.attendancePct}
+              showInfo={false}
+              strokeColor={getProgressColor(stats.attendancePct, [60, 80])}
+              style={{ marginTop: 8, marginBottom: 0 }}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={5}>
-          <Card>
-            <Statistic
-              title="Посещаемость"
-              value={stats.attendancePct}
-              suffix="%"
-              prefix={<CheckCircleOutlined />}
-              styles={{ content: { color: stats.attendancePct >= 70 ? "#52c41a" : "#f5222d" } }}
+        <Col xs={24} sm={12} lg={6}>
+          <Card size="small">
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>Вовлечённость</Typography.Text>
+            <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginTop: 4, color: stats.engagement.color }}>
+              {stats.engagement.score}%
+            </div>
+            <Progress
+              percent={stats.engagement.score}
+              showInfo={false}
+              strokeColor={stats.engagement.color}
+              style={{ marginTop: 8, marginBottom: 0 }}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={4}>
-          <Card>
-            <Statistic
-              title="Мероприятий"
-              value={stats.signupCount}
-              prefix={<CalendarOutlined />}
-            />
+            <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+              Социальная активность: {stats.signupCount} мероп.
+            </Typography.Text>
           </Card>
         </Col>
       </Row>
