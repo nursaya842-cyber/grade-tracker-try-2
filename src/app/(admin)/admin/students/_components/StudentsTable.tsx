@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition, useEffect, useRef } from "react";
 import {
   Table, Button, Input, Typography, Space, Popconfirm, App, Avatar, Select,
   Modal, Form,
@@ -8,8 +8,10 @@ import {
 import {
   PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined,
   LineChartOutlined, BarChartOutlined, UserOutlined, LoginOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
+import { useRouter, usePathname } from "next/navigation";
 import { formatDateTime } from "@/lib/utils";
 import { deleteStudent } from "../../_actions/student-actions";
 import { resetPassword } from "../../_actions/teacher-actions";
@@ -35,9 +37,33 @@ interface Student {
   gpa: number;
 }
 
-export default function StudentsTable({ students, faculties }: { students: Student[]; faculties: Faculty[] }) {
-  const [search, setSearch] = useState("");
-  const [courseFilter, setCourseFilter] = useState<number | null>(null);
+interface Props {
+  students: Student[];
+  faculties: Faculty[];
+  total: number;
+  page: number;
+  pageSize: number;
+  search: string;
+  course: number | null;
+  facultyId: string | null;
+}
+
+export default function StudentsTable({
+  students,
+  faculties,
+  total,
+  page,
+  pageSize,
+  search: initialSearch,
+  course: initialCourse,
+  facultyId: initialFacultyId,
+}: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [, startTransition] = useTransition();
+
+  const [searchVal, setSearchVal] = useState(initialSearch);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [gradesStudentId, setGradesStudentId] = useState<string | null>(null);
@@ -47,18 +73,27 @@ export default function StudentsTable({ students, faculties }: { students: Stude
   const [resetForm] = Form.useForm();
   const { message } = App.useApp();
 
-  const filtered = students.filter((s) => {
-    const matchesSearch =
-      s.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.includes(search);
-    const matchesCourse = courseFilter ? s.course_year === courseFilter : true;
-    return matchesSearch && matchesCourse;
-  });
+  function navigate(overrides: Record<string, string | number | null>) {
+    const params = new URLSearchParams();
+    const merged = {
+      page: String(page),
+      search: initialSearch,
+      course: initialCourse ? String(initialCourse) : "",
+      faculty: initialFacultyId ?? "",
+      ...Object.fromEntries(
+        Object.entries(overrides).map(([k, v]) => [k, v == null ? "" : String(v)])
+      ),
+    };
+    Object.entries(merged).forEach(([k, v]) => {
+      if (v) params.set(k, v);
+    });
+    startTransition(() => router.push(`${pathname}?${params.toString()}`));
+  }
 
   const handleDelete = async (id: string) => {
     const res = await deleteStudent(id);
     if (res.error) message.error(res.error);
-    else message.success("Студент удалён");
+    else { message.success("Студент удалён"); navigate({ page: 1 }); }
   };
 
   const handleResetPassword = async () => {
@@ -78,19 +113,12 @@ export default function StudentsTable({ students, faculties }: { students: Stude
       title: "Фото",
       key: "avatar",
       width: 60,
-      render: (_, record) => (
-        <Avatar
-          src={record.face_photo_url ? undefined : undefined}
-          icon={<UserOutlined />}
-          style={{ background: "#722ed1" }}
-        />
-      ),
+      render: () => <Avatar icon={<UserOutlined />} style={{ background: "#722ed1" }} />,
     },
     {
       title: "Имя",
       dataIndex: "full_name",
       key: "full_name",
-      sorter: (a, b) => a.full_name.localeCompare(b.full_name),
     },
     {
       title: "Email",
@@ -103,15 +131,12 @@ export default function StudentsTable({ students, faculties }: { students: Stude
       key: "course_year",
       width: 80,
       render: (v: number | null) => v ?? "—",
-      sorter: (a, b) => (a.course_year ?? 0) - (b.course_year ?? 0),
     },
     {
       title: "Факультет",
       dataIndex: "faculty_name",
       key: "faculty_name",
       render: (v: string | null) => v ?? <span style={{ color: "#999" }}>—</span>,
-      filters: faculties.map((f) => ({ text: f.name, value: f.name })),
-      onFilter: (value, record) => record.faculty_name === value,
       responsive: ["md"] as const,
     },
     {
@@ -124,7 +149,6 @@ export default function StudentsTable({ students, faculties }: { students: Stude
           {v > 0 ? v.toFixed(2) : "—"}
         </span>
       ),
-      sorter: (a, b) => a.gpa - b.gpa,
     },
     {
       title: "Дата создания",
@@ -139,51 +163,12 @@ export default function StudentsTable({ students, faculties }: { students: Stude
       width: 240,
       render: (_, record) => (
         <Space size="small">
-          <Button
-            type="text"
-            size="small"
-            icon={<LoginOutlined />}
-            title="Войти как"
-            onClick={() => startImpersonation(record.id)}
-          />
-          <Button
-            type="text"
-            size="small"
-            icon={<LineChartOutlined />}
-            title="Оценки"
-            onClick={() => setGradesStudentId(record.id)}
-          />
-          <Button
-            type="text"
-            size="small"
-            icon={<BarChartOutlined />}
-            title="Активность"
-            onClick={() => setSocialStudentId(record.id)}
-          />
-          <Button
-            type="text"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setEditingStudent(record);
-              setFormOpen(true);
-            }}
-          />
-          <Button
-            type="text"
-            size="small"
-            icon={<KeyOutlined />}
-            onClick={() => {
-              setResetUserId(record.id);
-              setResetOpen(true);
-            }}
-          />
-          <Popconfirm
-            title="Удалить студента?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Удалить"
-            cancelText="Отмена"
-          >
+          <Button type="text" size="small" icon={<LoginOutlined />} title="Войти как" onClick={() => startImpersonation(record.id)} />
+          <Button type="text" size="small" icon={<LineChartOutlined />} title="Оценки" onClick={() => setGradesStudentId(record.id)} />
+          <Button type="text" size="small" icon={<BarChartOutlined />} title="Активность" onClick={() => setSocialStudentId(record.id)} />
+          <Button type="text" size="small" icon={<EditOutlined />} onClick={() => { setEditingStudent(record); setFormOpen(true); }} />
+          <Button type="text" size="small" icon={<KeyOutlined />} onClick={() => { setResetUserId(record.id); setResetOpen(true); }} />
+          <Popconfirm title="Удалить студента?" onConfirm={() => handleDelete(record.id)} okText="Удалить" cancelText="Отмена">
             <Button type="text" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -195,82 +180,91 @@ export default function StudentsTable({ students, faculties }: { students: Stude
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Студенты
+          Студенты <span style={{ fontSize: 14, fontWeight: 400, color: "#8c8c8c" }}>({total})</span>
         </Typography.Title>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setEditingStudent(null);
-            setFormOpen(true);
-          }}
-        >
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingStudent(null); setFormOpen(true); }}>
           Добавить
         </Button>
       </div>
 
       <Space style={{ marginBottom: 16 }} wrap>
-        <Input.Search
+        <Input
+          prefix={<SearchOutlined />}
           placeholder="Поиск по имени или email..."
           allowClear
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchVal}
           style={{ width: 300 }}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSearchVal(val);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => navigate({ search: val, page: 1 }), 400);
+          }}
+          onPressEnter={() => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            navigate({ search: searchVal, page: 1 });
+          }}
+          onClear={() => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            navigate({ search: "", page: 1 });
+          }}
         />
         <Select
           placeholder="Курс"
           allowClear
+          value={initialCourse}
           style={{ width: 120 }}
-          onChange={(v) => setCourseFilter(v ?? null)}
+          onChange={(v) => navigate({ course: v ?? null, page: 1 })}
           options={[1, 2, 3, 4, 5, 6].map((n) => ({ label: `${n} курс`, value: n }))}
+        />
+        <Select
+          placeholder="Факультет"
+          allowClear
+          showSearch
+          optionFilterProp="label"
+          value={initialFacultyId}
+          style={{ width: 200 }}
+          onChange={(v) => navigate({ faculty: v ?? null, page: 1 })}
+          options={faculties.map((f) => ({ label: f.name, value: f.id }))}
         />
       </Space>
 
       <Table
-        dataSource={filtered}
+        dataSource={students}
         columns={columns}
         rowKey="id"
-        pagination={{ pageSize: 10, showSizeChanger: true }}
         size="middle"
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          showSizeChanger: false,
+          showTotal: (t, range) => `${range[0]}-${range[1]} из ${t}`,
+          onChange: (p) => navigate({ page: p }),
+        }}
       />
 
       <StudentFormModal
         open={formOpen}
         student={editingStudent}
         faculties={faculties}
-        onClose={() => {
-          setFormOpen(false);
-          setEditingStudent(null);
-        }}
+        onClose={() => { setFormOpen(false); setEditingStudent(null); navigate({ page: 1 }); }}
       />
-
-      <StudentGradesModal
-        studentId={gradesStudentId}
-        onClose={() => setGradesStudentId(null)}
-      />
-
-      <StudentSocialModal
-        studentId={socialStudentId}
-        onClose={() => setSocialStudentId(null)}
-      />
+      <StudentGradesModal studentId={gradesStudentId} onClose={() => setGradesStudentId(null)} />
+      <StudentSocialModal studentId={socialStudentId} onClose={() => setSocialStudentId(null)} />
 
       <Modal
         title="Сброс пароля"
         open={resetOpen}
         onOk={handleResetPassword}
-        onCancel={() => {
-          setResetOpen(false);
-          resetForm.resetFields();
-        }}
+        onCancel={() => { setResetOpen(false); resetForm.resetFields(); }}
         okText="Сбросить"
       >
         <Form form={resetForm} layout="vertical">
           <Form.Item
             name="newPassword"
             label="Новый пароль"
-            rules={[
-              { required: true, message: "Введите пароль" },
-              { min: 6, message: "Минимум 6 символов" },
-            ]}
+            rules={[{ required: true, message: "Введите пароль" }, { min: 6, message: "Минимум 6 символов" }]}
           >
             <Input.Password placeholder="Новый пароль" />
           </Form.Item>

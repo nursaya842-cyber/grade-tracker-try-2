@@ -87,7 +87,6 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
       okText="Создать"
       cancelText="Отмена"
       width={640}
-      destroyOnHidden
     >
       {conflicts.length > 0 && (
         <Alert

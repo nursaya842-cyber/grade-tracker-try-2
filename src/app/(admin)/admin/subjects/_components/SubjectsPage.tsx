@@ -82,7 +82,6 @@ export default function SubjectsPage({ subjects }: { subjects: Subject[] }) {
         confirmLoading={loading}
         okText={editing ? "Сохранить" : "Создать"}
         cancelText="Отмена"
-        destroyOnHidden
       >
         <Form form={form} layout="vertical" requiredMark={false}>
           <Form.Item name="name" label="Название" rules={[{ required: true, message: "Введите название" }]}>

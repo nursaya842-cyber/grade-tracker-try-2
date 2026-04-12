@@ -124,7 +124,6 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
       confirmLoading={loading}
       okText={isEditing ? "Сохранить" : "Создать"}
       cancelText="Отмена"
-      destroyOnHidden
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item

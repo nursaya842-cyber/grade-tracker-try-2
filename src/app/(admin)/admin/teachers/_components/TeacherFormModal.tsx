@@ -97,7 +97,6 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
       confirmLoading={loading}
       okText={isEditing ? "Сохранить" : "Создать"}
       cancelText="Отмена"
-      destroyOnHidden
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item

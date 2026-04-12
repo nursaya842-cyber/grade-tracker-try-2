@@ -158,7 +158,6 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
         confirmLoading={loading}
         okText={editing ? "Сохранить" : "Создать"}
         cancelText="Отмена"
-        destroyOnHidden
       >
         <Form form={form} layout="vertical" requiredMark={false}>
           <Form.Item

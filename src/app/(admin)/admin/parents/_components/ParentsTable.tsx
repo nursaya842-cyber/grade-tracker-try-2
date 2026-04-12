@@ -224,7 +224,6 @@ export default function ParentsTable({ parents, students }: Props) {
         confirmLoading={loading}
         okText={editing ? "Сохранить" : "Создать"}
         cancelText="Отмена"
-        destroyOnHidden
         width={600}
       >
         <Form form={form} layout="vertical" requiredMark={false}>

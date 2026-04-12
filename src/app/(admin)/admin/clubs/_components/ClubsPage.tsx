@@ -117,7 +117,6 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
         confirmLoading={loading}
         okText={editing ? "Сохранить" : "Создать"}
         cancelText="Отмена"
-        destroyOnHidden
       >
         <Form form={form} layout="vertical" requiredMark={false}>
           <Form.Item name="name" label="Название" rules={[{ required: true, message: "Введите название" }]}>

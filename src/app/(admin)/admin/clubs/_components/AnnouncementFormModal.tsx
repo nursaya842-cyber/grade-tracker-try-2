@@ -69,7 +69,6 @@ export default function AnnouncementFormModal({ clubId, onClose }: Props) {
       confirmLoading={loading}
       okText="Создать"
       cancelText="Отмена"
-      destroyOnHidden
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item name="title" label="Название" rules={[{ required: true, message: "Введите название" }]}>
