@@ -27,7 +27,7 @@ interface Recommendation {
 // ── Gemini REST helper ──────────────────────────────────────────────────────
 const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY") ?? "";
 const GEMINI_URL =
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
 
 const SYSTEM_PROMPT =
   "Ты куратор KBTU. Отвечай СТРОГО JSON без markdown-блоков. Поля: title (3-4 слова), description (1-2 предложения с конкретными данными), action (1 краткое конкретное действие), expected_effect (ожидаемый результат). Всё на русском, без воды.";
