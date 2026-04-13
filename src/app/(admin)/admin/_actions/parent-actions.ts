@@ -93,16 +93,21 @@ export async function deleteParent(userId: string) {
   return { error: null };
 }
 
-export async function fetchAllStudentsForSelect() {
+export async function searchStudentsForSelect(query: string) {
   const supabase = await createClient();
 
-  const { data } = await supabase
+  let q = supabase
     .from("users")
     .select("id, full_name, email, course_year")
     .eq("role", "student")
     .is("deleted_at", null)
     .order("full_name")
-    .limit(500);
+    .limit(20);
 
+  if (query.trim()) {
+    q = q.or(`full_name.ilike.%${query.trim()}%,email.ilike.%${query.trim()}%`);
+  }
+
+  const { data } = await q;
   return data ?? [];
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useClientMount } from "@/hooks/use-client-mount";
 import { useState } from "react";
 import {
   Card,
@@ -16,13 +17,17 @@ import {
   Space,
   Progress,
   Tag,
+  Empty,
 } from "antd";
 import {
   LockOutlined,
   UserOutlined,
+  AimOutlined,
 } from "@ant-design/icons";
 import { changeStudentPassword } from "../../_actions/student-actions";
 import { formatDate } from "@/lib/utils";
+import RecommendationCard from "@/components/recommendations/RecommendationCard";
+import type { Recommendation } from "@/components/recommendations/RecommendationCard";
 
 interface Profile {
   id: string;
@@ -52,6 +57,7 @@ interface Props {
   profile: Profile;
   photoSignedUrl: string | null;
   stats: Stats;
+  recommendations: Recommendation[];
 }
 
 function getRiskBadge(segment: string): { label: string; color: string } {
@@ -70,11 +76,13 @@ export default function StudentProfileClient({
   profile,
   photoSignedUrl,
   stats,
+  recommendations,
 }: Props) {
   const { message } = App.useApp();
   const [pwdOpen, setPwdOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const mounted = useClientMount();
 
   const risk = getRiskBadge(stats.engagement.segment);
 
@@ -176,6 +184,32 @@ export default function StudentProfileClient({
         </Col>
       </Row>
 
+      {/* Recommendations section */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 12 }}>
+          <Space align="center">
+            <AimOutlined style={{ fontSize: 18, color: "#1677ff" }} />
+            <Typography.Title level={5} style={{ margin: 0 }}>
+              Персональные рекомендации (Next Best Action)
+            </Typography.Title>
+          </Space>
+          <Typography.Text type="secondary" style={{ display: "block", fontSize: 13, marginTop: 2 }}>
+            На основе анализа ваших данных и принципов CVM
+          </Typography.Text>
+        </div>
+        {recommendations.length === 0 ? (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="Нет активных рекомендаций — всё в порядке!"
+            style={{ padding: "24px 0" }}
+          />
+        ) : (
+          recommendations.map((rec) => (
+            <RecommendationCard key={rec.id} rec={rec} />
+          ))
+        )}
+      </div>
+
       {/* Profile card */}
       <Card style={{ maxWidth: 600 }}>
         <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
@@ -210,6 +244,7 @@ export default function StudentProfileClient({
 
       {/* Change password modal */}
       <Modal
+        forceRender={mounted}
         title="Смена пароля"
         open={pwdOpen}
         onCancel={() => {

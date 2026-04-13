@@ -207,7 +207,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
         <Table
           dataSource={data.recentGrades}
           columns={gradeColumns}
-          rowKey={(_, i) => String(i)}
+          rowKey={(r) => String(r.lesson_id)}
           pagination={{ pageSize: 10 }}
           size="small"
         />
@@ -221,7 +221,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
         <Table
           dataSource={data.recentAttendance}
           columns={attendanceColumns}
-          rowKey={(_, i) => String(i)}
+          rowKey={(r) => String(r.lesson_id)}
           pagination={{ pageSize: 10 }}
           size="small"
         />

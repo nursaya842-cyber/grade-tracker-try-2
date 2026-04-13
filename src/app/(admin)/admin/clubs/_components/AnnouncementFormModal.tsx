@@ -1,4 +1,5 @@
 "use client";
+import { useClientMount } from "@/hooks/use-client-mount";
 
 import React, { useState } from "react";
 import { Modal, Form, Input, DatePicker, TimePicker, Upload, Button, App } from "antd";
@@ -14,6 +15,7 @@ interface Props {
 
 export default function AnnouncementFormModal({ clubId, onClose }: Props) {
   const [form] = Form.useForm();
+  const mounted = useClientMount();
   const [loading, setLoading] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const { message } = App.useApp();
@@ -62,6 +64,7 @@ export default function AnnouncementFormModal({ clubId, onClose }: Props) {
 
   return (
     <Modal
+        forceRender={mounted}
       title="Новое объявление"
       open={!!clubId}
       onOk={handleSubmit}

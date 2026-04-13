@@ -1,4 +1,5 @@
 "use client";
+import { useClientMount } from "@/hooks/use-client-mount";
 
 import React, { useState } from "react";
 import {
@@ -37,6 +38,7 @@ export default function TeacherProfileClient({
   const [pwdOpen, setPwdOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const mounted = useClientMount();
 
   const handleChangePassword = async (values: {
     currentPassword: string;
@@ -87,6 +89,7 @@ export default function TeacherProfileClient({
       </Card>
 
       <Modal
+        forceRender={mounted}
         title="Смена пароля"
         open={pwdOpen}
         onCancel={() => {

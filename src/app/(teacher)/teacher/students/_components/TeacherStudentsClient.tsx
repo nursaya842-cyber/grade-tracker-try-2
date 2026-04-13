@@ -1,21 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Typography,
-  Table,
-  Avatar,
-  Input,
-  Button,
-  Tag,
-} from "antd";
-import {
-  UserOutlined,
-  SearchOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import React, { useState, useRef } from "react";
+import { Typography, Table, Avatar, Input, Tag } from "antd";
+import { UserOutlined, SearchOutlined, EyeOutlined } from "@ant-design/icons";
+import { useRouter, usePathname } from "next/navigation";
 import type { ColumnsType } from "antd/es/table";
 import StudentDetailDrawer from "./StudentDetailDrawer";
+import { Button } from "antd";
 
 interface Student {
   id: string;
@@ -25,21 +16,40 @@ interface Student {
   course_year: number | null;
 }
 
-export default function TeacherStudentsClient({
-  students,
-}: {
+interface Props {
   students: Student[];
-}) {
-  const [search, setSearch] = useState("");
+  total: number;
+  page: number;
+  pageSize: number;
+  search: string;
+}
+
+export default function TeacherStudentsClient({ students, total, page, pageSize, search }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedName, setSelectedName] = useState("");
+  const [searchValue, setSearchValue] = useState(search);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filtered = students.filter(
-    (s) =>
-      s.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      s.email.includes(search)
-  );
+  const navigate = (updates: Record<string, string | number | undefined>) => {
+    const params = new URLSearchParams();
+    const merged = { page: String(page), search, ...Object.fromEntries(Object.entries(updates).map(([k, v]) => [k, v != null ? String(v) : ""])) };
+    if (merged.page && merged.page !== "1") params.set("page", merged.page);
+    if (merged.search) params.set("search", merged.search);
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
-  const selectedStudent = students.find((s) => s.id === selectedId);
+  const handleSearch = (value: string) => {
+    setSearchValue(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => navigate({ search: value, page: 1 }), 400);
+  };
+
+  const openDrawer = (id: string, name: string) => {
+    setSelectedId(id);
+    setSelectedName(name);
+  };
 
   const columns: ColumnsType<Student> = [
     {
@@ -47,7 +57,7 @@ export default function TeacherStudentsClient({
       key: "student",
       render: (_, record) => (
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Avatar icon={<UserOutlined />} size={36} />
+          <Avatar icon={<UserOutlined />} src={record.face_photo_url ?? undefined} size={36} />
           <div>
             <div style={{ fontWeight: 600, lineHeight: 1.2 }}>{record.full_name}</div>
             <div style={{ fontSize: 12, color: "#8c8c8c" }}>{record.email}</div>
@@ -60,18 +70,17 @@ export default function TeacherStudentsClient({
       dataIndex: "course_year",
       key: "course_year",
       width: 90,
-      render: (v: number | null) =>
-        v ? <Tag>{v} курс</Tag> : <Tag>—</Tag>,
+      render: (v: number | null) => v ? <Tag>{v} курс</Tag> : <Tag>—</Tag>,
     },
     {
       title: "",
       key: "actions",
-      width: 140,
+      width: 160,
       render: (_, record) => (
         <Button
           size="small"
           icon={<EyeOutlined />}
-          onClick={() => setSelectedId(record.id)}
+          onClick={(e) => { e.stopPropagation(); openDrawer(record.id, record.full_name); }}
         >
           Профиль студента
         </Button>
@@ -81,14 +90,7 @@ export default function TeacherStudentsClient({
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
           Мои студенты
         </Typography.Title>
@@ -96,27 +98,35 @@ export default function TeacherStudentsClient({
           prefix={<SearchOutlined />}
           placeholder="Поиск по имени или email"
           style={{ width: 300 }}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchValue}
+          onChange={(e) => handleSearch(e.target.value)}
           allowClear
+          onClear={() => handleSearch("")}
         />
       </div>
 
       <Table
-        dataSource={filtered}
+        dataSource={students}
         columns={columns}
         rowKey="id"
-        pagination={{ pageSize: 20 }}
         size="middle"
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          showSizeChanger: false,
+          showTotal: (t) => `Всего: ${t} студентов`,
+          onChange: (p) => navigate({ page: p }),
+        }}
         onRow={(record) => ({
           style: { cursor: "pointer" },
-          onClick: () => setSelectedId(record.id),
+          onClick: () => openDrawer(record.id, record.full_name),
         })}
       />
 
       <StudentDetailDrawer
         studentId={selectedId}
-        studentName={selectedStudent?.full_name ?? ""}
+        studentName={selectedName}
         onClose={() => setSelectedId(null)}
       />
     </div>

@@ -1,4 +1,5 @@
 "use client";
+import { useClientMount } from "@/hooks/use-client-mount";
 
 import React, { useState } from "react";
 import { Table, Button, Typography, Popconfirm, App, Modal, Form, Input, Space } from "antd";
@@ -16,6 +17,7 @@ export default function SubjectsPage({ subjects }: { subjects: Subject[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Subject | null>(null);
   const [form] = Form.useForm();
+  const mounted = useClientMount();
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
 
@@ -75,6 +77,7 @@ export default function SubjectsPage({ subjects }: { subjects: Subject[] }) {
       </div>
       <Table dataSource={subjects} columns={columns} rowKey="id" pagination={{ pageSize: 20 }} size="middle" />
       <Modal
+        forceRender={mounted}
         title={editing ? "Редактировать предмет" : "Новый предмет"}
         open={modalOpen}
         onOk={handleSubmit}

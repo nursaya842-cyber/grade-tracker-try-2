@@ -23,7 +23,6 @@ const SUBJECT_COLORS = [
 interface FormOptions {
   subjects: { id: string; name: string }[];
   teachers: { id: string; full_name: string }[];
-  students: { id: string; full_name: string; course_year: number | null }[];
 }
 
 interface CalendarEvent {

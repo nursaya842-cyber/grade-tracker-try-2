@@ -1,4 +1,5 @@
 "use client";
+import { useClientMount } from "@/hooks/use-client-mount";
 
 import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Upload, Button, App } from "antd";
@@ -21,6 +22,7 @@ interface Props {
 
 export default function TeacherFormModal({ open, teacher, onClose }: Props) {
   const [form] = Form.useForm();
+  const mounted = useClientMount();
   const [loading, setLoading] = useState(false);
   const [diplomaPath, setDiplomaPath] = useState<string | null>(null);
   const { message } = App.useApp();
@@ -90,6 +92,7 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
 
   return (
     <Modal
+        forceRender={mounted}
       title={isEditing ? "Редактировать преподавателя" : "Новый преподаватель"}
       open={open}
       onOk={handleSubmit}

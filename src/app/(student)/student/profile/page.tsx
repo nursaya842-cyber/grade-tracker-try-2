@@ -1,9 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getEffectiveUserIdFromCookies } from "@/lib/impersonation";
 import { redirect } from "next/navigation";
-import { Suspense } from "react";
 import StudentProfileClient from "./_components/StudentProfileClient";
-import RecommendationList from "@/components/recommendations/RecommendationList";
 import { calculateGpa } from "@/lib/utils";
 import { calculateEngagement } from "@/lib/engagement";
 import { fetchCheckinAverage } from "../_actions/checkin-actions";
@@ -79,22 +77,28 @@ export default async function StudentProfilePage() {
     photoSignedUrl = signed?.signedUrl ?? null;
   }
 
+  // Recommendations
+  const { data: recsData } = await supabase
+    .from("recommendations")
+    .select("id, rule_id, category, next_action, priority_score, title, action, expected_effect, deadline")
+    .eq("user_id", effectiveId)
+    .is("resolved_at", null)
+    .is("dismissed_at", null)
+    .order("priority_score", { ascending: false })
+    .limit(5);
+
   return (
-    <>
-      <Suspense fallback={null}>
-        <RecommendationList userId={effectiveId} />
-      </Suspense>
-      <StudentProfileClient
-        profile={profile}
-        photoSignedUrl={photoSignedUrl}
-        stats={{
-          avgGrade,
-          gpa,
-          attendancePct,
-          signupCount: signupCount ?? 0,
-          engagement,
-        }}
-      />
-    </>
+    <StudentProfileClient
+      profile={profile}
+      photoSignedUrl={photoSignedUrl}
+      stats={{
+        avgGrade,
+        gpa,
+        attendancePct,
+        signupCount: signupCount ?? 0,
+        engagement,
+      }}
+      recommendations={recsData ?? []}
+    />
   );
 }

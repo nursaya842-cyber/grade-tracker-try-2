@@ -6,7 +6,6 @@ import {
   Button,
   Upload,
   Alert,
-  List,
   Tag,
   Progress,
   Space,
@@ -433,43 +432,35 @@ export default function FaceIdModal({
               <Typography.Text strong>
                 Распознано: {matchedCount} / {totalWithPhoto}
               </Typography.Text>
-              <List
-                size="small"
-                style={{ marginTop: 8, maxHeight: 200, overflow: "auto" }}
-                dataSource={students.filter((s) => results.has(s.studentId))}
-                renderItem={(s) => {
+              <div style={{ marginTop: 8, maxHeight: 200, overflow: "auto" }}>
+                {students.filter((s) => results.has(s.studentId)).map((s) => {
                   const r = results.get(s.studentId)!;
                   return (
-                    <List.Item>
+                    <div key={s.studentId} style={{ padding: "4px 0", borderBottom: "1px solid #f0f0f0" }}>
                       <Space>
                         <CheckCircleOutlined style={{ color: "#52c41a" }} />
                         <span>{s.fullName}</span>
-                        <Tag color="blue">
-                          {Math.round(r.confidence * 100)}%
-                        </Tag>
+                        <Tag color="blue">{Math.round(r.confidence * 100)}%</Tag>
                       </Space>
-                    </List.Item>
+                    </div>
                   );
-                }}
-              />
+                })}
+              </div>
               {students.filter((s) => s.facePhotoUrl && !results.has(s.studentId)).length > 0 && (
                 <>
                   <Typography.Text type="secondary" style={{ display: "block", marginTop: 8 }}>
                     Не распознано:
                   </Typography.Text>
-                  <List
-                    size="small"
-                    style={{ maxHeight: 150, overflow: "auto" }}
-                    dataSource={students.filter((s) => s.facePhotoUrl && !results.has(s.studentId))}
-                    renderItem={(s) => (
-                      <List.Item>
+                  <div style={{ maxHeight: 150, overflow: "auto" }}>
+                    {students.filter((s) => s.facePhotoUrl && !results.has(s.studentId)).map((s) => (
+                      <div key={s.studentId} style={{ padding: "4px 0", borderBottom: "1px solid #f0f0f0" }}>
                         <Space>
                           <CloseCircleOutlined style={{ color: "#f5222d" }} />
                           <span>{s.fullName}</span>
                         </Space>
-                      </List.Item>
-                    )}
-                  />
+                      </div>
+                    ))}
+                  </div>
                 </>
               )}
             </div>

@@ -232,14 +232,44 @@ export async function fetchLessonsForRange(start: string, end: string) {
 
 export async function fetchFormOptions() {
   const supabase = await createClient();
-  const [subjects, teachers, students] = await Promise.all([
+  const [subjects, teachers] = await Promise.all([
     supabase.from("subjects").select("id, name").is("deleted_at", null).order("name"),
     supabase.from("users").select("id, full_name").eq("role", "teacher").is("deleted_at", null).order("full_name"),
-    supabase.from("users").select("id, full_name, course_year").eq("role", "student").is("deleted_at", null).order("full_name"),
   ]);
   return {
     subjects: subjects.data ?? [],
     teachers: teachers.data ?? [],
-    students: students.data ?? [],
   };
+}
+
+export async function searchStudentsForSchedule(query: string) {
+  const supabase = await createClient();
+  let q = supabase
+    .from("users")
+    .select("id, full_name, course_year")
+    .eq("role", "student")
+    .is("deleted_at", null)
+    .order("full_name")
+    .limit(20);
+  if (query.trim()) {
+    q = q.or(`full_name.ilike.%${query.trim()}%,email.ilike.%${query.trim()}%`);
+  }
+  const { data } = await q;
+  return data ?? [];
+}
+
+export async function searchTeachersForSchedule(query: string) {
+  const supabase = await createClient();
+  let q = supabase
+    .from("users")
+    .select("id, full_name")
+    .eq("role", "teacher")
+    .is("deleted_at", null)
+    .order("full_name")
+    .limit(20);
+  if (query.trim()) {
+    q = q.ilike("full_name", `%${query.trim()}%`);
+  }
+  const { data } = await q;
+  return data ?? [];
 }

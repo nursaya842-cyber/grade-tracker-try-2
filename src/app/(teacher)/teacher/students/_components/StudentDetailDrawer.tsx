@@ -172,7 +172,7 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
       }
       open={!!studentId}
       onClose={onClose}
-      width={820}
+      size="large"
       styles={{ body: { padding: "16px 24px" } }}
     >
       {loading && (
@@ -309,7 +309,7 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
                     {p.checkinAvg !== null && (
                       <Alert
                         type={p.checkinAvg >= 7 ? "success" : p.checkinAvg >= 5 ? "warning" : "error"}
-                        message={`Средний wellbeing-индекс за последние 4 недели: ${p.checkinAvg}/10`}
+                        title={`Средний wellbeing-индекс за последние 4 недели: ${p.checkinAvg}/10`}
                         style={{ marginBottom: 12 }}
                         showIcon
                       />

@@ -1,9 +1,14 @@
 "use client";
+import { useClientMount } from "@/hooks/use-client-mount";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Modal, Form, Select, DatePicker, TimePicker, Checkbox, Button, Alert, App, Space } from "antd";
 import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
-import { createLessonSeries } from "../../_actions/schedule-actions";
+import {
+  createLessonSeries,
+  searchStudentsForSchedule,
+  searchTeachersForSchedule,
+} from "../../_actions/schedule-actions";
 import dayjs from "dayjs";
 
 const DAY_OPTIONS = [
@@ -19,7 +24,6 @@ const DAY_OPTIONS = [
 interface FormOptions {
   subjects: { id: string; name: string }[];
   teachers: { id: string; full_name: string }[];
-  students: { id: string; full_name: string; course_year: number | null }[];
 }
 
 interface Props {
@@ -28,11 +32,50 @@ interface Props {
   formOptions: FormOptions;
 }
 
+interface UserOption {
+  id: string;
+  full_name: string;
+  course_year?: number | null;
+}
+
 export default function LessonFormModal({ open, onClose, formOptions }: Props) {
   const [form] = Form.useForm();
+  const mounted = useClientMount();
   const [loading, setLoading] = useState(false);
   const [conflicts, setConflicts] = useState<string[]>([]);
   const { message } = App.useApp();
+
+  // Teacher server search
+  const [teacherOptions, setTeacherOptions] = useState<UserOption[]>(formOptions.teachers);
+  const [teacherFetching, setTeacherFetching] = useState(false);
+  const teacherDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Student server search
+  const [studentOptions, setStudentOptions] = useState<UserOption[]>([]);
+  const [studentFetching, setStudentFetching] = useState(false);
+  const studentDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTeacherSearch = (val: string) => {
+    if (teacherDebounce.current) clearTimeout(teacherDebounce.current);
+    teacherDebounce.current = setTimeout(async () => {
+      setTeacherFetching(true);
+      const data = await searchTeachersForSchedule(val);
+      setTeacherOptions(data);
+      setTeacherFetching(false);
+    }, 300);
+  };
+
+  const fetchStudents = useCallback(async (query: string) => {
+    setStudentFetching(true);
+    const data = await searchStudentsForSchedule(query);
+    setStudentOptions(data);
+    setStudentFetching(false);
+  }, []);
+
+  const handleStudentSearch = (val: string) => {
+    if (studentDebounce.current) clearTimeout(studentDebounce.current);
+    studentDebounce.current = setTimeout(() => fetchStudents(val), 300);
+  };
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
@@ -79,6 +122,7 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
 
   return (
     <Modal
+      forceRender={mounted}
       title="Новая серия уроков"
       open={open}
       onOk={handleSubmit}
@@ -115,21 +159,29 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
 
         <Form.Item name="teacherId" label="Преподаватель" rules={[{ required: true, message: "Выберите преподавателя" }]}>
           <Select
-            placeholder="Выберите преподавателя"
+            placeholder="Начните вводить имя преподавателя..."
             showSearch
-            optionFilterProp="label"
-            options={formOptions.teachers.map((t) => ({ label: t.full_name, value: t.id }))}
+            filterOption={false}
+            loading={teacherFetching}
+            onSearch={handleTeacherSearch}
+            onFocus={() => { if (teacherOptions.length === 0) searchTeachersForSchedule("").then(setTeacherOptions); }}
+            notFoundContent={teacherFetching ? "Поиск..." : "Не найдено"}
+            options={teacherOptions.map((t) => ({ label: t.full_name, value: t.id }))}
           />
         </Form.Item>
 
         <Form.Item name="studentIds" label="Студенты">
           <Select
             mode="multiple"
-            placeholder="Выберите студентов"
+            placeholder="Начните вводить имя или email студента..."
             showSearch
-            optionFilterProp="label"
-            options={formOptions.students.map((s) => ({
-              label: `${s.full_name} (${s.course_year ?? "—"} курс)`,
+            filterOption={false}
+            loading={studentFetching}
+            onSearch={handleStudentSearch}
+            onFocus={() => { if (studentOptions.length === 0) fetchStudents(""); }}
+            notFoundContent={studentFetching ? "Поиск..." : "Начните вводить имя..."}
+            options={studentOptions.map((s) => ({
+              label: `${s.full_name}${s.course_year ? ` (${s.course_year} курс)` : ""}`,
               value: s.id,
             }))}
           />

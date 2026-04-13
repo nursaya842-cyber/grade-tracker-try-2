@@ -1,5 +1,6 @@
 "use client";
 
+import { useClientMount } from "@/hooks/use-client-mount";
 import { useState } from "react";
 import {
   Table, Button, Input, Typography, Space, Popconfirm, App, Modal, Form, Tag,
@@ -21,6 +22,7 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Faculty | null>(null);
   const [form] = Form.useForm();
+  const mounted = useClientMount();
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
 
@@ -147,6 +149,7 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
       />
 
       <Modal
+        forceRender={mounted}
         title={editing ? "Редактировать факультет" : "Новый факультет"}
         open={modalOpen}
         onOk={handleSubmit}

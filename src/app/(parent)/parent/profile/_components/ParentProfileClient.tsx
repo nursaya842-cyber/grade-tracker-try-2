@@ -1,5 +1,6 @@
 "use client";
 
+import { useClientMount } from "@/hooks/use-client-mount";
 import { useState } from "react";
 import {
   Card, Descriptions, Button, Modal, Form, Input, Typography, App, Space,
@@ -20,6 +21,7 @@ export default function ParentProfileClient({ profile }: { profile: Profile }) {
   const [pwdOpen, setPwdOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const mounted = useClientMount();
 
   const handleChangePassword = async (values: {
     currentPassword: string;
@@ -60,6 +62,7 @@ export default function ParentProfileClient({ profile }: { profile: Profile }) {
       </Card>
 
       <Modal
+        forceRender={mounted}
         title="Смена пароля"
         open={pwdOpen}
         onCancel={() => { setPwdOpen(false); form.resetFields(); }}

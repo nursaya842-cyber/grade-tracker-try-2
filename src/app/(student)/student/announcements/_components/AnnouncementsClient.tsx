@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import {
   Typography,
   Segmented,
-  List,
   Card,
   Tag,
   Button,
@@ -145,20 +144,15 @@ export default function AnnouncementsClient({
       </div>
 
       {mode === "list" ? (
-        <List
-          dataSource={announcements}
-          locale={{ emptyText: "Нет предстоящих мероприятий" }}
-          renderItem={(a) => {
+        <div>
+          {announcements.length === 0 && (
+            <Typography.Text type="secondary">Нет предстоящих мероприятий</Typography.Text>
+          )}
+          {announcements.map((a) => {
             const st = getState(a);
             return (
-              <Card style={{ marginBottom: 12 }}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                  }}
-                >
+              <Card key={a.id} style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div style={{ flex: 1 }}>
                     <Space style={{ marginBottom: 8 }}>
                       <Tag color="purple">{a.clubName}</Tag>
@@ -170,20 +164,13 @@ export default function AnnouncementsClient({
                       {a.title}
                     </Typography.Title>
                     {a.description && (
-                      <Typography.Paragraph
-                        type="secondary"
-                        style={{ marginBottom: 4 }}
-                      >
+                      <Typography.Paragraph type="secondary" style={{ marginBottom: 4 }}>
                         {a.description}
                       </Typography.Paragraph>
                     )}
                     <Space>
-                      {a.venue && (
-                        <Tag icon={<EnvironmentOutlined />}>{a.venue}</Tag>
-                      )}
-                      <Tag icon={<TeamOutlined />}>
-                        {st.signupCount} записалось
-                      </Tag>
+                      {a.venue && <Tag icon={<EnvironmentOutlined />}>{a.venue}</Tag>}
+                      <Tag icon={<TeamOutlined />}>{st.signupCount} записалось</Tag>
                     </Space>
                   </div>
                   <Button
@@ -197,8 +184,8 @@ export default function AnnouncementsClient({
                 </div>
               </Card>
             );
-          }}
-        />
+          })}
+        </div>
       ) : (
         <div
           style={{

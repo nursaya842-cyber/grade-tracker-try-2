@@ -1,4 +1,5 @@
 "use client";
+import { useClientMount } from "@/hooks/use-client-mount";
 
 import React, { useState } from "react";
 import { Row, Col, Card, Typography, Button, Avatar, Badge, Popconfirm, App, Modal, Form, Input, Select, Space, Collapse, List, Empty } from "antd";
@@ -26,6 +27,7 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
   const [editing, setEditing] = useState<Club | null>(null);
   const [announcementClubId, setAnnouncementClubId] = useState<string | null>(null);
   const [form] = Form.useForm();
+  const mounted = useClientMount();
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
 
@@ -110,6 +112,7 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
       )}
 
       <Modal
+        forceRender={mounted}
         title={editing ? "Редактировать клуб" : "Новый клуб"}
         open={formOpen}
         onOk={handleSubmit}

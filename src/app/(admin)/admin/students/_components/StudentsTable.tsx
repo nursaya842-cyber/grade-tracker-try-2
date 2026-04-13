@@ -1,4 +1,5 @@
 "use client";
+import { useClientMount } from "@/hooks/use-client-mount";
 
 import React, { useState, useTransition, useEffect, useRef } from "react";
 import {
@@ -71,6 +72,7 @@ export default function StudentsTable({
   const [resetOpen, setResetOpen] = useState(false);
   const [resetUserId, setResetUserId] = useState<string | null>(null);
   const [resetForm] = Form.useForm();
+  const mounted = useClientMount();
   const { message } = App.useApp();
 
   function navigate(overrides: Record<string, string | number | null>) {
@@ -254,6 +256,7 @@ export default function StudentsTable({
       <StudentSocialModal studentId={socialStudentId} onClose={() => setSocialStudentId(null)} />
 
       <Modal
+        forceRender={mounted}
         title="Сброс пароля"
         open={resetOpen}
         onOk={handleResetPassword}

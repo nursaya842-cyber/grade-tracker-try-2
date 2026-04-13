@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { calculateGpa } from "@/lib/utils";
 
 async function getParentContext() {
@@ -12,10 +13,18 @@ async function getParentContext() {
   return { supabase, authUser: user };
 }
 
+function serviceRole() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
+
 export async function fetchMyChildren() {
   const { supabase, authUser } = await getParentContext();
 
-  // Get linked student IDs
+  // Get linked student IDs (via RLS — parent sees only their own links)
   const { data: links } = await supabase
     .from("parent_students")
     .select("student_id")
@@ -24,16 +33,17 @@ export async function fetchMyChildren() {
   if (!links || links.length === 0) return [];
 
   const studentIds = links.map((l) => l.student_id);
+  const svc = serviceRole();
 
   // Get student profiles
-  const { data: students } = await supabase
+  const { data: students } = await svc
     .from("users")
     .select("id, full_name, email, course_year, face_photo_url")
     .in("id", studentIds)
     .is("deleted_at", null);
 
   // Get grades for GPA
-  const { data: allGrades } = await supabase
+  const { data: allGrades } = await svc
     .from("grades")
     .select("student_id, score")
     .in("student_id", studentIds)
@@ -48,7 +58,7 @@ export async function fetchMyChildren() {
   }
 
   // Get attendance stats
-  const { data: allAttendance } = await supabase
+  const { data: allAttendance } = await svc
     .from("attendance")
     .select("student_id, status")
     .in("student_id", studentIds);
@@ -75,7 +85,7 @@ export async function fetchMyChildren() {
 export async function fetchChildDetail(childId: string) {
   const { supabase, authUser } = await getParentContext();
 
-  // Verify parent-child link
+  // Verify parent-child link (uses RLS — parent can only see their own links)
   const { data: link } = await supabase
     .from("parent_students")
     .select("student_id")
@@ -85,8 +95,11 @@ export async function fetchChildDetail(childId: string) {
 
   if (!link) return null;
 
+  // Use service role for all data reads — avoids cascading RLS issues on JOINs
+  const svc = serviceRole();
+
   // Profile
-  const { data: profile } = await supabase
+  const { data: profile } = await svc
     .from("users")
     .select("id, full_name, email, course_year, face_photo_url, created_at")
     .eq("id", childId)
@@ -95,7 +108,7 @@ export async function fetchChildDetail(childId: string) {
   if (!profile) return null;
 
   // Grades
-  const { data: gradeData } = await supabase
+  const { data: gradeData } = await svc
     .from("grades")
     .select("score, graded_at, lesson_id, lessons!inner(starts_at, subject_id, subjects!inner(name))")
     .eq("student_id", childId)
@@ -106,7 +119,7 @@ export async function fetchChildDetail(childId: string) {
   const scores = (gradeData ?? []).map((g) => g.score).filter((s): s is number => s !== null);
 
   // Attendance
-  const { data: attData } = await supabase
+  const { data: attData } = await svc
     .from("attendance")
     .select("status, marked_at, lesson_id, lessons!inner(starts_at, subjects!inner(name))")
     .eq("student_id", childId)
@@ -117,7 +130,7 @@ export async function fetchChildDetail(childId: string) {
   const attPresent = attData?.filter((a) => a.status === "present").length ?? 0;
 
   // Schedule (upcoming lessons)
-  const { data: enrollments } = await supabase
+  const { data: enrollments } = await svc
     .from("lesson_students")
     .select("lesson_id, lessons!inner(id, starts_at, ends_at, subject_id, subjects!inner(name), teacher:users!lessons_teacher_id_fkey(full_name))")
     .eq("student_id", childId);
@@ -125,12 +138,12 @@ export async function fetchChildDetail(childId: string) {
   const lessons = (enrollments ?? []).map((e) => e.lessons);
 
   // Club memberships
-  const { data: clubMemberships } = await supabase
+  const { data: clubMemberships } = await svc
     .from("club_members")
     .select("club_id, clubs!inner(name)")
     .eq("student_id", childId);
 
-  // Photo signed URL
+  // Photo signed URL (use regular client for storage)
   let photoSignedUrl: string | null = null;
   if (profile.face_photo_url) {
     const { data: signed } = await supabase.storage
