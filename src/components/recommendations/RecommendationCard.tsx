@@ -9,7 +9,7 @@ import {
   ClockCircleOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
-import { dismissRecommendation } from "./recommendation-actions";
+import { acceptRecommendation, dismissRecommendation } from "./recommendation-actions";
 
 export interface Recommendation {
   id: string;
@@ -63,7 +63,13 @@ function boldMarkdown(text: string): string {
   return text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
-export default function RecommendationCard({ rec }: { rec: Recommendation }) {
+export default function RecommendationCard({
+  rec,
+  onAccept,
+}: {
+  rec: Recommendation;
+  onAccept?: () => void;
+}) {
   const { message } = App.useApp();
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -74,6 +80,18 @@ export default function RecommendationCard({ rec }: { rec: Recommendation }) {
   const priority = getPriorityConfig(rec.priority_score);
 
   const title = rec.title ?? rec.next_action.split(".")[0].replace(/\*\*/g, "");
+
+  const handleAccept = async () => {
+    setLoading(true);
+    const result = await acceptRecommendation(rec.id);
+    setLoading(false);
+    if (result.error) {
+      message.error(result.error);
+    } else {
+      setDismissed(true);
+      onAccept?.();
+    }
+  };
 
   const handleDismiss = async () => {
     setLoading(true);
@@ -106,7 +124,7 @@ export default function RecommendationCard({ rec }: { rec: Recommendation }) {
           type="primary"
           size="small"
           icon={<ThunderboltOutlined />}
-          onClick={handleDismiss}
+          onClick={handleAccept}
           loading={loading}
           style={{ flexShrink: 0 }}
         >

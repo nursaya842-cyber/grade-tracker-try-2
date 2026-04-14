@@ -27,6 +27,28 @@ export async function triggerStudentRecommendations(studentId: string) {
   }
 }
 
+export async function acceptRecommendation(recId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authorized" };
+
+  const effectiveId = await getEffectiveUserIdFromCookies(user.id);
+
+  const { error } = await supabase
+    .from("recommendations")
+    .update({ resolved_at: new Date().toISOString() })
+    .eq("id", recId)
+    .eq("user_id", effectiveId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/student/schedule");
+  revalidatePath("/student/profile");
+  return { error: null };
+}
+
 export async function dismissRecommendation(recId: string) {
   const supabase = await createClient();
   const {

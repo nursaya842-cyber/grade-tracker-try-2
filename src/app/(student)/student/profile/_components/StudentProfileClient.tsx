@@ -83,8 +83,12 @@ export default function StudentProfileClient({
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const mounted = useClientMount();
+  const [engagementBonus, setEngagementBonus] = useState(0);
 
-  const risk = getRiskBadge(stats.engagement.segment);
+  const engagementScore = Math.min(100, stats.engagement.score + engagementBonus);
+  const engagementColor = engagementScore >= 80 ? "#52c41a" : engagementScore >= 60 ? "#1677ff" : engagementScore >= 40 ? "#faad14" : "#f5222d";
+  const engagementSegment = engagementScore >= 80 ? "excellent" : engagementScore >= 60 ? "stable" : engagementScore >= 40 ? "declining" : "at-risk";
+  const risk = getRiskBadge(engagementSegment);
 
   const handleChangePassword = async (values: {
     currentPassword: string;
@@ -168,13 +172,13 @@ export default function StudentProfileClient({
         <Col xs={24} sm={12} lg={6}>
           <Card size="small">
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>Engagement</Typography.Text>
-            <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginTop: 4, color: stats.engagement.color }}>
-              {stats.engagement.score}%
+            <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, marginTop: 4, color: engagementColor }}>
+              {engagementScore}%
             </div>
             <Progress
-              percent={stats.engagement.score}
+              percent={engagementScore}
               showInfo={false}
-              strokeColor={stats.engagement.color}
+              strokeColor={engagementColor}
               style={{ marginTop: 8, marginBottom: 0 }}
             />
             <Typography.Text type="secondary" style={{ fontSize: 11 }}>
@@ -205,7 +209,11 @@ export default function StudentProfileClient({
           />
         ) : (
           recommendations.map((rec) => (
-            <RecommendationCard key={rec.id} rec={rec} />
+            <RecommendationCard
+              key={rec.id}
+              rec={rec}
+              onAccept={() => setEngagementBonus((b) => b + 1)}
+            />
           ))
         )}
       </div>
