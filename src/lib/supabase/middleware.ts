@@ -50,6 +50,7 @@ export async function updateSession(request: NextRequest) {
 
   // Allow public routes
   if (
+    pathname === "/" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/_next") ||
