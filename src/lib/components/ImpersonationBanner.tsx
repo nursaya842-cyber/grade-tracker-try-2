@@ -11,13 +11,13 @@ export default function ImpersonationBanner({ userName }: { userName: string }) 
       banner
       message={
         <span>
-          Вы работаете от имени: <strong>{userName}</strong>
+          You are currently viewing as: <strong>{userName}</strong>
         </span>
       }
       action={
         <form action={stopImpersonation}>
           <Button size="small" type="primary" htmlType="submit">
-            Вернуться как Admin
+            Return as Admin
           </Button>
         </form>
       }

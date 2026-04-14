@@ -53,23 +53,23 @@ export default function StudentGradesModal({ studentId, onClose }: Props) {
 
   const columns = [
     {
-      title: "Дата",
+      title: "Date",
       key: "date",
       render: (_: unknown, record: GradeRow) =>
         formatDate(record.lessons?.starts_at ?? record.graded_at),
     },
     {
-      title: "Оценка",
+      title: "Score",
       dataIndex: "score",
       key: "score",
       render: (score: number | null) =>
-        score !== null ? score : <span style={{ color: "#999" }}>Н/Д</span>,
+        score !== null ? score : <span style={{ color: "#999" }}>N/A</span>,
     },
   ];
 
   return (
     <Modal
-      title="Академическая успеваемость"
+      title="Academic Performance"
       open={!!studentId}
       onCancel={onClose}
       footer={null}
@@ -79,11 +79,11 @@ export default function StudentGradesModal({ studentId, onClose }: Props) {
       {loadingSubjects ? (
         <Spin style={{ display: "block", margin: "40px auto" }} />
       ) : subjects.length === 0 ? (
-        <Empty description="Студент не записан ни на один предмет" />
+        <Empty description="Student is not enrolled in any subject" />
       ) : (
         <>
           <Select
-            placeholder="Выберите предмет"
+            placeholder="Select subject"
             style={{ width: "100%", marginBottom: 16 }}
             value={selectedSubject}
             onChange={setSelectedSubject}
@@ -97,7 +97,7 @@ export default function StudentGradesModal({ studentId, onClose }: Props) {
               loading={loadingGrades}
               pagination={{ pageSize: 10 }}
               size="small"
-              locale={{ emptyText: "Нет оценок по этому предмету" }}
+              locale={{ emptyText: "No grades for this subject" }}
             />
           )}
         </>

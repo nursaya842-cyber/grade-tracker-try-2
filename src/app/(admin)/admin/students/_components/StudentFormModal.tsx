@@ -70,13 +70,13 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
         .upload(path, compressed);
 
       if (error) {
-        message.error("Ошибка загрузки фото");
+        message.error("Photo upload error");
         return false;
       }
       setPhotoPath(path);
-      message.success("Фото загружено");
+      message.success("Photo uploaded");
     } catch {
-      message.error("Ошибка сжатия фото");
+      message.error("Photo compression error");
     }
     return false;
   };
@@ -95,7 +95,7 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
       });
       if (res.error) message.error(res.error);
       else {
-        message.success("Студент обновлён");
+        message.success("Student updated");
         onClose();
       }
     } else {
@@ -109,7 +109,7 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
       });
       if (res.error) message.error(res.error);
       else {
-        message.success("Студент создан");
+        message.success("Student created");
         onClose();
       }
     }
@@ -120,29 +120,29 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
   return (
     <Modal
         forceRender={mounted}
-      title={isEditing ? "Редактировать студента" : "Новый студент"}
+      title={isEditing ? "Edit student" : "New student"}
       open={open}
       onOk={handleSubmit}
       onCancel={onClose}
       confirmLoading={loading}
-      okText={isEditing ? "Сохранить" : "Создать"}
-      cancelText="Отмена"
+      okText={isEditing ? "Save" : "Create"}
+      cancelText="Cancel"
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item
           name="fullName"
-          label="ФИО"
-          rules={[{ required: true, message: "Введите ФИО" }]}
+          label="Full Name"
+          rules={[{ required: true, message: "Enter full name" }]}
         >
-          <Input placeholder="Петров Пётр Петрович" />
+          <Input placeholder="John Smith" />
         </Form.Item>
 
         <Form.Item
           name="email"
           label="Email"
           rules={[
-            { required: true, message: "Введите email" },
-            { type: "email", message: "Некорректный email" },
+            { required: true, message: "Enter email" },
+            { type: "email", message: "Invalid email" },
           ]}
         >
           <Input placeholder="student@university.kz" />
@@ -151,22 +151,22 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
         {!isEditing && (
           <Form.Item
             name="password"
-            label="Пароль"
+            label="Password"
             rules={[
-              { required: true, message: "Введите пароль" },
-              { min: 6, message: "Минимум 6 символов" },
+              { required: true, message: "Enter password" },
+              { min: 6, message: "Minimum 6 characters" },
             ]}
           >
-            <Input.Password placeholder="Пароль" />
+            <Input.Password placeholder="Password" />
           </Form.Item>
         )}
 
         <Form.Item
           name="facultyId"
-          label="Факультет"
+          label="Faculty"
         >
           <Select
-            placeholder="Выберите факультет"
+            placeholder="Select faculty"
             allowClear
             showSearch
             optionFilterProp="label"
@@ -179,19 +179,19 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
 
         <Form.Item
           name="courseYear"
-          label="Курс"
-          rules={[{ required: true, message: "Выберите курс" }]}
+          label="Year"
+          rules={[{ required: true, message: "Select year" }]}
         >
           <Select
-            placeholder="Выберите курс"
+            placeholder="Select year"
             options={[1, 2, 3, 4, 5, 6].map((n) => ({
-              label: `${n} курс`,
+              label: `Year ${n}`,
               value: n,
             }))}
           />
         </Form.Item>
 
-        <Form.Item label="Фото (для Face-ID)">
+        <Form.Item label="Photo (for Face-ID)">
           <Upload
             accept=".jpg,.jpeg,.png"
             maxCount={1}
@@ -199,12 +199,12 @@ export default function StudentFormModal({ open, student, faculties, onClose }: 
             showUploadList={false}
           >
             <Button icon={<UploadOutlined />}>
-              {photoPath ? "Заменить фото" : "Загрузить фото"}
+              {photoPath ? "Replace photo" : "Upload photo"}
             </Button>
           </Upload>
           {photoPath && (
             <span style={{ marginLeft: 8, color: "#52c41a", fontSize: 13 }}>
-              Фото загружено
+              Photo uploaded
             </span>
           )}
         </Form.Item>

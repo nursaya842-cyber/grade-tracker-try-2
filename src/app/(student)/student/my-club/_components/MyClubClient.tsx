@@ -98,7 +98,7 @@ export default function MyClubClient({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Участник добавлен");
+      message.success("Member added");
       setAddMemberOpen(false);
       setSelectedStudentId(null);
     }
@@ -109,7 +109,7 @@ export default function MyClubClient({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Участник удалён");
+      message.success("Member removed");
     }
   };
 
@@ -138,7 +138,7 @@ export default function MyClubClient({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Объявление создано");
+      message.success("Announcement created");
       setAnnouncementOpen(false);
       form.resetFields();
     }
@@ -149,13 +149,13 @@ export default function MyClubClient({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Объявление удалено");
+      message.success("Announcement deleted");
     }
   };
 
   const memberColumns = [
     {
-      title: "Имя",
+      title: "Name",
       dataIndex: "fullName",
       key: "fullName",
       render: (name: string) => (
@@ -166,21 +166,21 @@ export default function MyClubClient({
       ),
     },
     {
-      title: "Телефон",
+      title: "Email",
       dataIndex: "email",
       key: "email",
       width: 160,
     },
     {
-      title: "Действия",
+      title: "Actions",
       key: "actions",
       width: 100,
       render: (_: unknown, record: Member) => (
         <Popconfirm
-          title="Удалить участника?"
+          title="Remove member?"
           onConfirm={() => handleRemoveMember(record.id)}
-          okText="Да"
-          cancelText="Нет"
+          okText="Yes"
+          cancelText="No"
         >
           <Button size="small" danger icon={<DeleteOutlined />} />
         </Popconfirm>
@@ -196,7 +196,7 @@ export default function MyClubClient({
         items={[
           {
             key: "announcements",
-            label: "Объявления",
+            label: "Announcements",
             children: (
               <div>
                 <Button
@@ -205,13 +205,13 @@ export default function MyClubClient({
                   onClick={() => setAnnouncementOpen(true)}
                   style={{ marginBottom: 16 }}
                 >
-                  Добавить объявление
+                  Add Announcement
                 </Button>
 
                 {announcements.length === 0 ? (
                   <Card>
                     <Typography.Text type="secondary">
-                      Нет объявлений
+                      No announcements
                     </Typography.Text>
                   </Card>
                 ) : (
@@ -227,10 +227,10 @@ export default function MyClubClient({
                               {formatDateTime(a.startsAt)}
                             </Tag>
                             <Popconfirm
-                              title="Удалить объявление?"
+                              title="Delete announcement?"
                               onConfirm={() => handleDeleteAnnouncement(a.id)}
-                              okText="Да"
-                              cancelText="Нет"
+                              okText="Yes"
+                              cancelText="No"
                             >
                               <Button size="small" danger icon={<DeleteOutlined />} />
                             </Popconfirm>
@@ -244,7 +244,7 @@ export default function MyClubClient({
                         )}
                         {a.venue && (
                           <Typography.Text type="secondary">
-                            Место: {a.venue}
+                            Venue: {a.venue}
                           </Typography.Text>
                         )}
                         <Collapse
@@ -252,7 +252,7 @@ export default function MyClubClient({
                           items={[
                             {
                               key: "signups",
-                              label: `Записалось: ${a.signups.length}`,
+                              label: `Signed up: ${a.signups.length}`,
                               children:
                                 a.signups.length > 0 ? (
                                   <List
@@ -264,7 +264,7 @@ export default function MyClubClient({
                                   />
                                 ) : (
                                   <Typography.Text type="secondary">
-                                    Пока никто не записался
+                                    No one has signed up yet
                                   </Typography.Text>
                                 ),
                             },
@@ -279,7 +279,7 @@ export default function MyClubClient({
           },
           {
             key: "members",
-            label: `Участники (${members.length})`,
+            label: `Members (${members.length})`,
             children: (
               <div>
                 <Button
@@ -288,7 +288,7 @@ export default function MyClubClient({
                   onClick={handleOpenAddMember}
                   style={{ marginBottom: 16 }}
                 >
-                  Добавить участника
+                  Add Member
                 </Button>
                 <Table
                   dataSource={members}
@@ -305,20 +305,20 @@ export default function MyClubClient({
 
       {/* Add Member Modal */}
       <Modal
-        title="Добавить участника"
+        title="Add Member"
         open={addMemberOpen}
         onCancel={() => {
           setAddMemberOpen(false);
           setSelectedStudentId(null);
         }}
         onOk={handleAddMember}
-        okText="Добавить"
-        cancelText="Отмена"
+        okText="Add"
+        cancelText="Cancel"
         confirmLoading={submitting}
       >
         <Select
           style={{ width: "100%" }}
-          placeholder="Выберите студента"
+          placeholder="Select a student"
           showSearch
           optionFilterProp="label"
           loading={loadingStudents}
@@ -333,7 +333,7 @@ export default function MyClubClient({
 
       {/* Create Announcement Modal */}
       <Modal
-        title="Новое объявление"
+        title="New Announcement"
         open={announcementOpen}
         onCancel={() => {
           setAnnouncementOpen(false);
@@ -344,28 +344,28 @@ export default function MyClubClient({
         <Form form={form} layout="vertical" onFinish={handleCreateAnnouncement}>
           <Form.Item
             name="title"
-            label="Название"
-            rules={[{ required: true, message: "Введите название" }]}
+            label="Title"
+            rules={[{ required: true, message: "Enter a title" }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item name="description" label="Описание">
+          <Form.Item name="description" label="Description">
             <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item name="venue" label="Место">
+          <Form.Item name="venue" label="Venue">
             <Input />
           </Form.Item>
           <Form.Item
             name="date"
-            label="Дата"
-            rules={[{ required: true, message: "Выберите дату" }]}
+            label="Date"
+            rules={[{ required: true, message: "Select a date" }]}
           >
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item
             name="timeRange"
-            label="Время начала — конца"
-            rules={[{ required: true, message: "Выберите время" }]}
+            label="Start — End Time"
+            rules={[{ required: true, message: "Select a time" }]}
           >
             <TimePicker.RangePicker
               format="HH:mm"
@@ -381,10 +381,10 @@ export default function MyClubClient({
                   form.resetFields();
                 }}
               >
-                Отмена
+                Cancel
               </Button>
               <Button type="primary" htmlType="submit" loading={submitting}>
-                Создать
+                Create
               </Button>
             </Space>
           </Form.Item>

@@ -5,13 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface GeminiRec {
-  title: string;
-  description: string;
-  action: string;
-  expected_effect: string;
-}
-
 interface Recommendation {
   user_id: string;
   rule_id: string;
@@ -24,38 +17,6 @@ interface Recommendation {
   deadline: string | null;
 }
 
-// ── Gemini REST helper ──────────────────────────────────────────────────────
-const GEMINI_KEY = Deno.env.get("GEMINI_API_KEY") ?? "";
-const GEMINI_URL =
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-
-const SYSTEM_PROMPT =
-  "Ты куратор KBTU. Отвечай СТРОГО JSON без markdown-блоков. Поля: title (3-4 слова), description (1-2 предложения с конкретными данными), action (1 краткое конкретное действие), expected_effect (ожидаемый результат). Всё на русском, без воды.";
-
-async function callGemini(userPrompt: string): Promise<GeminiRec | null> {
-  if (!GEMINI_KEY) return null;
-  try {
-    const res = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 256,
-          responseMimeType: "application/json",
-        },
-      }),
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const raw = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    return JSON.parse(raw) as GeminiRec;
-  } catch {
-    return null;
-  }
-}
 
 function addDays(days: number): string {
   return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
@@ -70,6 +31,30 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
+
+  // Optional: process only one student (on-demand from profile view)
+  let targetStudentId: string | null = null;
+  try {
+    const body = await req.json().catch(() => ({}));
+    targetStudentId = body?.studentId ?? null;
+  } catch { /* no body */ }
+
+  // If single student: check freshness — skip if recs were generated < 24h ago
+  if (targetStudentId) {
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("recommendations")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", targetStudentId)
+      .is("resolved_at", null)
+      .is("dismissed_at", null)
+      .gte("created_at", oneDayAgo);
+    if ((count ?? 0) > 0) {
+      return new Response(JSON.stringify({ success: true, skipped: true, reason: "fresh" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+  }
 
   const allRecs: Recommendation[] = [];
 
@@ -110,11 +95,10 @@ Deno.serve(async (req) => {
   // STUDENT RULES
   // ═══════════════════════════════════════════════════════════════════════
 
-  const { data: students } = await supabase
-    .from("users")
-    .select("id")
-    .eq("role", "student")
-    .is("deleted_at", null);
+  // If on-demand (single student) — only fetch that one; else process all
+  let studentsQuery = supabase.from("users").select("id").eq("role", "student").is("deleted_at", null);
+  if (targetStudentId) studentsQuery = studentsQuery.eq("id", targetStudentId);
+  const { data: students } = await studentsQuery;
 
   for (const student of students ?? []) {
     const sid = student.id;
@@ -149,7 +133,7 @@ Deno.serve(async (req) => {
 
       if (worstSubjId) {
         const subjStats = bySubject.get(worstSubjId)!;
-        const sName = subjectName.get(worstSubjId) ?? "предмету";
+        const sName = subjectName.get(worstSubjId) ?? "subject";
         const tName = subjStats.teacherId ? teacherName.get(subjStats.teacherId) : null;
 
         const { data: nextLesson } = await supabase
@@ -166,25 +150,17 @@ Deno.serve(async (req) => {
         if (nextLesson && nextLesson.length > 0) {
           const ls = nextLesson[0].lessons as unknown as { starts_at: string };
           const d = new Date(ls.starts_at);
-          const days = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
-          nextInfo = `. Следующее занятие: ${days[d.getDay()]}, ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+          const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+          nextInfo = `. Next class: ${days[d.getDay()]}, ${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
         }
 
-        const fallbackText = `По предмету **${sName}** посещаемость ${Math.round(worstPct)}%${tName ? ` (преп. ${tName})` : ""}${nextInfo}. Старайтесь не пропускать.`;
-
-        const ai = await callGemini(
-          `Студент имеет посещаемость ${Math.round(worstPct)}% по предмету "${sName}"${tName ? `, преподаватель ${tName}` : ""}${nextInfo}. Норма ≥70%.`
-        );
-
         allRecs.push({
-          user_id: sid,
-          rule_id: "R-01",
-          category: "academic",
-          next_action: ai?.description ?? fallbackText,
+          user_id: sid, rule_id: "R-01", category: "academic",
+          next_action: `Attendance for **${sName}** is ${Math.round(worstPct)}%${tName ? ` (teacher: ${tName})` : ""}${nextInfo}. Try not to miss classes.`,
           priority_score: 0.9,
-          title: ai?.title ?? "Улучшить посещаемость",
-          action: ai?.action ?? `Посетить все занятия по ${sName} на следующей неделе`,
-          expected_effect: ai?.expected_effect ?? "Повышение академической успеваемости на 10-15%",
+          title: "Improve Attendance",
+          action: `Attend all classes for ${sName} next week`,
+          expected_effect: "Improve academic performance by 10–15%",
           deadline: addDays(7),
         });
       }
@@ -221,26 +197,18 @@ Deno.serve(async (req) => {
           if (cnt > topCount) { topSubjId = s2; topCount = cnt; }
         }
 
-        const sName = subjectName.get(topSubjId) ?? "предметам";
+        const sName = subjectName.get(topSubjId) ?? "subjects";
         const lastThree = ys.slice(-3).join("→");
         const lastLesson = gradeData[gradeData.length - 1].lessons as unknown as { teacher_id: string | null };
         const tName = lastLesson.teacher_id ? teacherName.get(lastLesson.teacher_id) : null;
 
-        const fallbackText = `Оценки снижаются по **${sName}**: ${lastThree}${tName ? `. Обратитесь к преподавателю **${tName}**` : ". Обратитесь к преподавателю за консультацией"}.`;
-
-        const ai = await callGemini(
-          `Оценки студента снижаются по предмету "${sName}", последние три: ${lastThree}. Тренд: ${slope.toFixed(1)} балл/урок${tName ? `. Преподаватель: ${tName}` : ""}.`
-        );
-
         allRecs.push({
-          user_id: sid,
-          rule_id: "R-03",
-          category: "academic",
-          next_action: ai?.description ?? fallbackText,
+          user_id: sid, rule_id: "R-03", category: "academic",
+          next_action: `Grades are declining in **${sName}**: ${lastThree}${tName ? `. Consult your teacher **${tName}**` : ". Consult your teacher for advice"}.`,
           priority_score: 0.8,
-          title: ai?.title ?? "Повысить успеваемость",
-          action: ai?.action ?? `Записаться на консультацию по ${sName}`,
-          expected_effect: ai?.expected_effect ?? "Стабилизация оценок на уровне 70+",
+          title: "Improve Academic Performance",
+          action: `Schedule a consultation for ${sName}`,
+          expected_effect: "Grade stabilization at 70+ level",
           deadline: addDays(14),
         });
       }
@@ -268,25 +236,17 @@ Deno.serve(async (req) => {
           const ev = upcomingEvents[0];
           const club = (ev.clubs as unknown as { name: string })?.name;
           const d = new Date(ev.starts_at);
-          nearestEvent = `"${ev.title}" (${club}) — ${d.toLocaleDateString("ru-RU")}`;
+          nearestEvent = `"${ev.title}" (${club}) — ${d.toLocaleDateString("en-GB")}`;
           eventHint = nearestEvent;
         }
 
-        const fallbackText = `Вы ещё не участвовали в клубных мероприятиях. ${eventHint ? `Ближайшее: **${eventHint}**.` : "Посмотрите объявления клубов!"}`;
-
-        const ai = await callGemini(
-          `Студент не участвовал ни в одном мероприятии за ${daysSinceSemester} дней семестра.${nearestEvent ? ` Ближайшее событие: ${nearestEvent}.` : ""}`
-        );
-
         allRecs.push({
-          user_id: sid,
-          rule_id: "R-04",
-          category: "social",
-          next_action: ai?.description ?? fallbackText,
+          user_id: sid, rule_id: "R-04", category: "social",
+          next_action: `You haven't participated in any club events yet. ${eventHint ? `Nearest: **${eventHint}**.` : "Check club announcements!"}`,
           priority_score: 0.5,
-          title: ai?.title ?? "Присоединиться к клубу",
-          action: ai?.action ?? "Записаться на ближайшее мероприятие клуба",
-          expected_effect: ai?.expected_effect ?? "Улучшение soft skills, расширение круга общения",
+          title: "Join a Club",
+          action: "Sign up for the nearest club event",
+          expected_effect: "Improve soft skills and expand social network",
           deadline: addDays(14),
         });
       }
@@ -344,26 +304,18 @@ Deno.serve(async (req) => {
 
       if (engagement < 40) {
         const weakAreas: string[] = [];
-        if (attPct < 70) weakAreas.push(`посещаемость ${Math.round(attPct)}%`);
+        if (attPct < 70) weakAreas.push(`attendance ${Math.round(attPct)}%`);
         if (gpa < 2.0) weakAreas.push(`GPA ${gpa.toFixed(2)}`);
-        if ((signupCount ?? 0) === 0) weakAreas.push("нет активности в клубах");
-        if (!checkins || checkins.length === 0) weakAreas.push("нет данных check-in");
-
-        const fallbackText = `Индекс вовлечённости ${engagement}/100. Слабые стороны: ${weakAreas.join(", ")}.`;
-
-        const ai = await callGemini(
-          `Индекс вовлечённости студента низкий: ${engagement}/100. Слабые стороны: ${weakAreas.join(", ")}.`
-        );
+        if ((signupCount ?? 0) === 0) weakAreas.push("no club activity");
+        if (!checkins || checkins.length === 0) weakAreas.push("no check-in data");
 
         allRecs.push({
-          user_id: sid,
-          rule_id: "R-07",
-          category: "academic",
-          next_action: ai?.description ?? fallbackText,
+          user_id: sid, rule_id: "R-07", category: "academic",
+          next_action: `Engagement index ${engagement}/100. Weak areas: ${weakAreas.join(", ")}.`,
           priority_score: 0.95,
-          title: ai?.title ?? "Повысить вовлечённость",
-          action: ai?.action ?? "Обратитесь к куратору для составления плана",
-          expected_effect: ai?.expected_effect ?? "Рост индекса вовлечённости на 15+ пунктов",
+          title: "Improve Engagement",
+          action: "Contact your advisor to build a plan",
+          expected_effect: "Engagement index growth by 15+ points",
           deadline: addDays(7),
         });
       }
@@ -371,107 +323,96 @@ Deno.serve(async (req) => {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // TEACHER RULES
+  // TEACHER + ADMIN RULES (only for cron/batch runs, not on-demand)
   // ═══════════════════════════════════════════════════════════════════════
 
-  const { data: teachers } = await supabase
-    .from("users")
-    .select("id")
-    .eq("role", "teacher")
-    .is("deleted_at", null);
+  if (!targetStudentId) {
+    const { data: teachers } = await supabase
+      .from("users")
+      .select("id")
+      .eq("role", "teacher")
+      .is("deleted_at", null);
 
-  for (const teacher of teachers ?? []) {
-    const tid = teacher.id;
+    for (const teacher of teachers ?? []) {
+      const tid = teacher.id;
 
-    // ── R-02: Grade entry overdue ──────────────────────────────────────────
-    const { data: overdue } = await supabase
-      .from("lessons")
-      .select("id, subject_id, ends_at")
-      .eq("teacher_id", tid)
-      .is("deleted_at", null)
-      .is("report_submitted_at", null)
-      .lt("ends_at", fortyEightHoursAgo)
-      .order("ends_at", { ascending: true })
-      .limit(3);
+      // ── R-02: Grade entry overdue ────────────────────────────────────────
+      const { data: overdue } = await supabase
+        .from("lessons")
+        .select("id, subject_id, ends_at")
+        .eq("teacher_id", tid)
+        .is("deleted_at", null)
+        .is("report_submitted_at", null)
+        .lt("ends_at", fortyEightHoursAgo)
+        .order("ends_at", { ascending: true })
+        .limit(3);
 
-    if (overdue && overdue.length > 0) {
-      const subjects = [...new Set(overdue.map((l) => subjectName.get(l.subject_id) ?? "?"))];
-      const oldest = new Date(overdue[0].ends_at);
-      const hoursAgo = Math.round((Date.now() - oldest.getTime()) / 3600000);
+      if (overdue && overdue.length > 0) {
+        const subjects = [...new Set(overdue.map((l) => subjectName.get(l.subject_id) ?? "?"))];
+        const oldest = new Date(overdue[0].ends_at);
+        const hoursAgo = Math.round((Date.now() - oldest.getTime()) / 3600000);
 
-      allRecs.push({
-        user_id: tid,
-        rule_id: "R-02",
-        category: "academic",
-        next_action: `${overdue.length} урок(ов) без отчёта по **${subjects.join(", ")}** (старейший: ${hoursAgo}ч назад).`,
-        priority_score: 0.8,
-        title: "Закрыть отчёты",
-        action: `Заполнить отчёты по ${subjects.join(", ")}`,
-        expected_effect: "Актуальные данные для студентов и администрации",
-        deadline: addDays(1),
-      });
+        allRecs.push({
+          user_id: tid, rule_id: "R-02", category: "academic",
+          next_action: `${overdue.length} lesson(s) without report for **${subjects.join(", ")}** (oldest: ${hoursAgo}h ago).`,
+          priority_score: 0.8,
+          title: "Close Reports",
+          action: `Fill in reports for ${subjects.join(", ")}`,
+          expected_effect: "Up-to-date data for students and administration",
+          deadline: addDays(1),
+        });
+      }
+
+      // ── R-05: >3 pending reports ─────────────────────────────────────────
+      const { count: pendingCount } = await supabase
+        .from("lessons")
+        .select("*", { count: "exact", head: true })
+        .eq("teacher_id", tid)
+        .is("deleted_at", null)
+        .is("report_submitted_at", null)
+        .lt("ends_at", now);
+
+      if ((pendingCount ?? 0) > 3) {
+        allRecs.push({
+          user_id: tid, rule_id: "R-05", category: "admin",
+          next_action: `**${pendingCount}** pending reports. Please close all reports as soon as possible.`,
+          priority_score: 0.9,
+          title: "Pending Reports",
+          action: "Open My Lessons section and close all overdue reports",
+          expected_effect: "Compliance with administration requirements",
+          deadline: addDays(2),
+        });
+      }
     }
 
-    // ── R-05: >3 pending reports ───────────────────────────────────────────
-    const { count: pendingCount } = await supabase
+    // ── R-06: Unassigned lessons ───────────────────────────────────────────
+    const { data: admins } = await supabase
+      .from("users").select("id").eq("role", "admin").is("deleted_at", null);
+
+    const { data: unassigned } = await supabase
       .from("lessons")
-      .select("*", { count: "exact", head: true })
-      .eq("teacher_id", tid)
+      .select("id, subject_id, starts_at")
+      .is("teacher_id", null)
       .is("deleted_at", null)
-      .is("report_submitted_at", null)
-      .lt("ends_at", now);
+      .gt("starts_at", now)
+      .order("starts_at", { ascending: true })
+      .limit(5);
 
-    if ((pendingCount ?? 0) > 3) {
-      allRecs.push({
-        user_id: tid,
-        rule_id: "R-05",
-        category: "admin",
-        next_action: `**${pendingCount}** незакрытых отчётов. Пожалуйста, закройте отчёты как можно скорее.`,
-        priority_score: 0.9,
-        title: "Незакрытые отчёты",
-        action: "Открыть раздел «Мои уроки» и закрыть все просроченные отчёты",
-        expected_effect: "Соответствие требованиям администрации",
-        deadline: addDays(2),
-      });
-    }
-  }
+    if (unassigned && unassigned.length > 0) {
+      const subjects = [...new Set(unassigned.map((l) => subjectName.get(l.subject_id) ?? "?"))];
+      const nearestDate = new Date(unassigned[0].starts_at).toLocaleDateString("en-GB");
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // ADMIN RULES
-  // ═══════════════════════════════════════════════════════════════════════
-
-  const { data: admins } = await supabase
-    .from("users")
-    .select("id")
-    .eq("role", "admin")
-    .is("deleted_at", null);
-
-  // ── R-06: Unassigned lessons ───────────────────────────────────────────
-  const { data: unassigned } = await supabase
-    .from("lessons")
-    .select("id, subject_id, starts_at")
-    .is("teacher_id", null)
-    .is("deleted_at", null)
-    .gt("starts_at", now)
-    .order("starts_at", { ascending: true })
-    .limit(5);
-
-  if (unassigned && unassigned.length > 0) {
-    const subjects = [...new Set(unassigned.map((l) => subjectName.get(l.subject_id) ?? "?"))];
-    const nearestDate = new Date(unassigned[0].starts_at).toLocaleDateString("ru-RU");
-
-    for (const admin of admins ?? []) {
-      allRecs.push({
-        user_id: admin.id,
-        rule_id: "R-06",
-        category: "admin",
-        next_action: `**${unassigned.length}** уроков без преподавателя (${subjects.join(", ")}). Ближайший: ${nearestDate}.`,
-        priority_score: 0.85,
-        title: "Назначить преподавателей",
-        action: `Назначить преподавателя на уроки: ${subjects.join(", ")}`,
-        expected_effect: "Студенты не останутся без занятий",
-        deadline: nearestDate,
-      });
+      for (const admin of admins ?? []) {
+        allRecs.push({
+          user_id: admin.id, rule_id: "R-06", category: "admin",
+          next_action: `**${unassigned.length}** lessons without a teacher (${subjects.join(", ")}). Nearest: ${nearestDate}.`,
+          priority_score: 0.85,
+          title: "Assign Teachers",
+          action: `Assign a teacher to lessons: ${subjects.join(", ")}`,
+          expected_effect: "Students won't be left without classes",
+          deadline: nearestDate,
+        });
+      }
     }
   }
 

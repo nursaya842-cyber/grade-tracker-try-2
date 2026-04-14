@@ -51,7 +51,7 @@ export default function TeacherProfileClient({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Пароль успешно изменён");
+      message.success("Password changed successfully");
       setPwdOpen(false);
       form.resetFields();
     }
@@ -59,38 +59,38 @@ export default function TeacherProfileClient({
 
   return (
     <div>
-      <Typography.Title level={4}>Профиль</Typography.Title>
+      <Typography.Title level={4}>Profile</Typography.Title>
 
       <Card style={{ maxWidth: 600 }}>
         <Descriptions column={1} bordered size="middle">
-          <Descriptions.Item label="ФИО">{profile.full_name}</Descriptions.Item>
+          <Descriptions.Item label="Full Name">{profile.full_name}</Descriptions.Item>
           <Descriptions.Item label="Email">{profile.email}</Descriptions.Item>
-          <Descriptions.Item label="Дата регистрации">
+          <Descriptions.Item label="Registration Date">
             {formatDate(profile.created_at)}
           </Descriptions.Item>
-          <Descriptions.Item label="Диплом">
+          <Descriptions.Item label="Diploma">
             {diplomaSignedUrl ? (
               <a href={diplomaSignedUrl} target="_blank" rel="noopener noreferrer">
                 <Button icon={<FileTextOutlined />} size="small">
-                  Просмотреть диплом
+                  View Diploma
                 </Button>
               </a>
             ) : (
-              <Typography.Text type="secondary">Не загружен</Typography.Text>
+              <Typography.Text type="secondary">Not uploaded</Typography.Text>
             )}
           </Descriptions.Item>
         </Descriptions>
 
         <Space style={{ marginTop: 16 }}>
           <Button icon={<LockOutlined />} onClick={() => setPwdOpen(true)}>
-            Сменить пароль
+            Change Password
           </Button>
         </Space>
       </Card>
 
       <Modal
         forceRender={mounted}
-        title="Смена пароля"
+        title="Change Password"
         open={pwdOpen}
         onCancel={() => {
           setPwdOpen(false);
@@ -101,33 +101,33 @@ export default function TeacherProfileClient({
         <Form form={form} layout="vertical" onFinish={handleChangePassword}>
           <Form.Item
             name="currentPassword"
-            label="Текущий пароль"
-            rules={[{ required: true, message: "Введите текущий пароль" }]}
+            label="Current Password"
+            rules={[{ required: true, message: "Enter your current password" }]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
             name="newPassword"
-            label="Новый пароль"
+            label="New Password"
             rules={[
-              { required: true, message: "Введите новый пароль" },
-              { min: 8, message: "Минимум 8 символов" },
+              { required: true, message: "Enter a new password" },
+              { min: 8, message: "Minimum 8 characters" },
             ]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
             name="confirmPassword"
-            label="Подтверждение пароля"
+            label="Confirm Password"
             dependencies={["newPassword"]}
             rules={[
-              { required: true, message: "Подтвердите пароль" },
+              { required: true, message: "Confirm your password" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue("newPassword") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error("Пароли не совпадают"));
+                  return Promise.reject(new Error("Passwords do not match"));
                 },
               }),
             ]}
@@ -137,10 +137,10 @@ export default function TeacherProfileClient({
           <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>
             <Space>
               <Button onClick={() => { setPwdOpen(false); form.resetFields(); }}>
-                Отмена
+                Cancel
               </Button>
               <Button type="primary" htmlType="submit" loading={loading}>
-                Сменить
+                Change
               </Button>
             </Space>
           </Form.Item>

@@ -43,8 +43,8 @@ export function calculateEngagement(input: EngagementInput): EngagementResult {
 
   const clamped = Math.max(0, Math.min(100, score));
 
-  if (clamped >= 80) return { score: clamped, segment: "excellent", color: "#52c41a", label: "Отличный" };
-  if (clamped >= 60) return { score: clamped, segment: "stable", color: "#1677ff", label: "Стабильный" };
-  if (clamped >= 40) return { score: clamped, segment: "declining", color: "#faad14", label: "Снижающийся" };
-  return { score: clamped, segment: "at-risk", color: "#f5222d", label: "В зоне риска" };
+  if (clamped >= 80) return { score: clamped, segment: "excellent", color: "#52c41a", label: "Excellent" };
+  if (clamped >= 60) return { score: clamped, segment: "stable", color: "#1677ff", label: "Stable" };
+  if (clamped >= 40) return { score: clamped, segment: "declining", color: "#faad14", label: "Declining" };
+  return { score: clamped, segment: "at-risk", color: "#f5222d", label: "At Risk" };
 }

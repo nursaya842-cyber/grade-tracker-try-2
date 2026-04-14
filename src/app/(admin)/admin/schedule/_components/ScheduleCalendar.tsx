@@ -57,7 +57,7 @@ export default function ScheduleCalendar({ formOptions }: { formOptions: FormOpt
     const teacher = l.teacher as unknown as { full_name: string } | null;
     return {
       id: l.id,
-      title: `${subjects?.name ?? "?"} — ${teacher?.full_name ?? "Не назначен"}`,
+      title: `${subjects?.name ?? "?"} — ${teacher?.full_name ?? "Not assigned"}`,
       start: new Date(l.starts_at),
       end: new Date(l.ends_at),
       seriesId: l.series_id,
@@ -80,18 +80,18 @@ export default function ScheduleCalendar({ formOptions }: { formOptions: FormOpt
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <Typography.Title level={4} style={{ margin: 0 }}>Расписание</Typography.Title>
+        <Typography.Title level={4} style={{ margin: 0 }}>Schedule</Typography.Title>
         <Space>
           <Segmented
             value={view}
             onChange={(v) => setView(v as View)}
             options={[
-              { label: "Неделя", value: "week" },
-              { label: "Месяц", value: "month" },
+              { label: "Week", value: "week" },
+              { label: "Month", value: "month" },
             ]}
           />
           <Button type="primary" icon={<PlusOutlined />} onClick={() => setFormOpen(true)}>
-            Создать серию
+            Create series
           </Button>
         </Space>
       </div>
@@ -107,19 +107,19 @@ export default function ScheduleCalendar({ formOptions }: { formOptions: FormOpt
           eventPropGetter={eventStyleGetter}
           onSelectEvent={(event) => setSelectedLessonId(event.id)}
           messages={{
-            today: "Сегодня",
-            previous: "Назад",
-            next: "Далее",
-            week: "Неделя",
-            month: "Месяц",
-            day: "День",
-            noEventsInRange: "Нет уроков",
+            today: "Today",
+            previous: "Back",
+            next: "Next",
+            week: "Week",
+            month: "Month",
+            day: "Day",
+            noEventsInRange: "No lessons",
           }}
           step={30}
           timeslots={2}
           min={new Date(0, 0, 0, 7, 0)}
           max={new Date(0, 0, 0, 22, 0)}
-          culture="ru"
+          culture="en"
         />
       </div>
 

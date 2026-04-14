@@ -48,16 +48,16 @@ export default function AnalyticsClient({
   pendingReports,
 }: Props) {
   const reportColumns: ColumnsType<Props["pendingReports"][number]> = [
-    { title: "Преподаватель", dataIndex: "teacherName", key: "teacherName" },
+    { title: "Teacher", dataIndex: "teacherName", key: "teacherName" },
     {
-      title: "Незакрытых",
+      title: "Pending",
       dataIndex: "unsubmittedCount",
       key: "unsubmittedCount",
       width: 120,
       render: (v: number) => <Tag color={v > 3 ? "red" : "orange"}>{v}</Tag>,
     },
     {
-      title: "Самый старый отчёт",
+      title: "Oldest Report",
       dataIndex: "oldestPending",
       key: "oldestPending",
       width: 200,
@@ -67,14 +67,14 @@ export default function AnalyticsClient({
 
   return (
     <div>
-      <Typography.Title level={4}>Аналитика</Typography.Title>
+      <Typography.Title level={4}>Analytics</Typography.Title>
 
       {/* KPI Cards */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Всего студентов"
+              title="Total Students"
               value={kpi.totalStudents}
               prefix={<TeamOutlined />}
             />
@@ -83,7 +83,7 @@ export default function AnalyticsClient({
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Посещаемость (30д)"
+              title="Attendance (30d)"
               value={kpi.avgAttendance}
               suffix="%"
               prefix={<PercentageOutlined />}
@@ -94,7 +94,7 @@ export default function AnalyticsClient({
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Средняя оценка (30д)"
+              title="Avg Score (30d)"
               value={kpi.avgGrade}
               prefix={<TrophyOutlined />}
               precision={1}
@@ -104,7 +104,7 @@ export default function AnalyticsClient({
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Мероприятий в этом месяце"
+              title="Events This Month"
               value={kpi.eventsThisMonth}
               prefix={<CalendarOutlined />}
             />
@@ -115,7 +115,7 @@ export default function AnalyticsClient({
       {/* Charts Row */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col xs={24} lg={12}>
-          <Card title="Посещаемость по предметам">
+          <Card title="Attendance by Subject">
             {attendanceBySubject.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={attendanceBySubject}>
@@ -123,16 +123,16 @@ export default function AnalyticsClient({
                   <XAxis dataKey="subject" tick={{ fontSize: 11 }} />
                   <YAxis domain={[0, 100]} />
                   <Tooltip formatter={(value) => `${value}%`} />
-                  <Bar dataKey="attendance" fill="#1677ff" name="Посещаемость %" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="attendance" fill="#1677ff" name="Attendance %" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <Typography.Text type="secondary">Нет данных</Typography.Text>
+              <Typography.Text type="secondary">No data</Typography.Text>
             )}
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Распределение оценок">
+          <Card title="Grade Distribution">
             {gradeDistribution.some((b) => b.count > 0) ? (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={gradeDistribution}>
@@ -140,18 +140,18 @@ export default function AnalyticsClient({
                   <XAxis dataKey="range" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#722ed1" name="Кол-во оценок" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#722ed1" name="Grade Count" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <Typography.Text type="secondary">Нет данных</Typography.Text>
+              <Typography.Text type="secondary">No data</Typography.Text>
             )}
           </Card>
         </Col>
       </Row>
 
       {/* Social Participation */}
-      <Card title="Участие в мероприятиях по месяцам" style={{ marginBottom: 24 }}>
+      <Card title="Event Participation by Month" style={{ marginBottom: 24 }}>
         {socialParticipation.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={socialParticipation}>
@@ -165,23 +165,23 @@ export default function AnalyticsClient({
                 stroke="#52c41a"
                 strokeWidth={2}
                 dot={{ r: 4 }}
-                name="Записей"
+                name="Sign-ups"
               />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <Typography.Text type="secondary">Нет данных</Typography.Text>
+          <Typography.Text type="secondary">No data</Typography.Text>
         )}
       </Card>
 
       {/* Pending Reports */}
-      <Card title="Незакрытые отчёты преподавателей">
+      <Card title="Pending Teacher Reports">
         <Table
           dataSource={pendingReports.map((p, i) => ({ ...p, key: i }))}
           columns={reportColumns}
           pagination={false}
           size="small"
-          locale={{ emptyText: "Все отчёты закрыты" }}
+          locale={{ emptyText: "All reports submitted" }}
         />
       </Card>
     </div>

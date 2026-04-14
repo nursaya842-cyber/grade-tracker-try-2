@@ -15,7 +15,7 @@ export default async function ParentLayout({
   if (!user) redirect("/login");
 
   const role = (user.user_metadata?.role as string) ?? null;
-  const fullName = (user.user_metadata?.full_name as string) ?? "Родитель";
+  const fullName = (user.user_metadata?.full_name as string) ?? "Parent";
 
   if (role !== "parent" && role !== "admin") {
     redirect(role === "teacher" ? "/teacher/lessons" : "/student/schedule");

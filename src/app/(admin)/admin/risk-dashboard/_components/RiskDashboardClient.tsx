@@ -100,7 +100,7 @@ export default function RiskDashboardClient({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Преподаватель назначен");
+      message.success("Teacher assigned");
       setAssignModal(null);
       setSelectedTeacher(null);
     }
@@ -108,20 +108,20 @@ export default function RiskDashboardClient({
 
   const heatmapColumns: ColumnsType<HeatmapRow> = [
     {
-      title: "Студент",
+      title: "Student",
       dataIndex: "fullName",
       key: "fullName",
       sorter: (a, b) => a.fullName.localeCompare(b.fullName),
     },
     {
-      title: "Курс",
+      title: "Year",
       dataIndex: "courseYear",
       key: "courseYear",
       width: 80,
       render: (v: number | null) => (v ? `${v}` : "—"),
     },
     {
-      title: "Посещаемость",
+      title: "Attendance",
       dataIndex: "attendancePct",
       key: "attendancePct",
       width: 140,
@@ -136,7 +136,7 @@ export default function RiskDashboardClient({
       ),
     },
     {
-      title: "Оценки",
+      title: "Grades",
       dataIndex: "avgGrade",
       key: "avgGrade",
       width: 120,
@@ -151,7 +151,7 @@ export default function RiskDashboardClient({
       ),
     },
     {
-      title: "Клубы",
+      title: "Clubs",
       dataIndex: "signupCount",
       key: "signupCount",
       width: 120,
@@ -168,9 +168,9 @@ export default function RiskDashboardClient({
   ];
 
   const reportColumns: ColumnsType<PendingReport> = [
-    { title: "Преподаватель", dataIndex: "teacherName", key: "teacherName" },
+    { title: "Teacher", dataIndex: "teacherName", key: "teacherName" },
     {
-      title: "Незакрытых",
+      title: "Unsubmitted",
       dataIndex: "unsubmittedCount",
       key: "unsubmittedCount",
       width: 120,
@@ -178,7 +178,7 @@ export default function RiskDashboardClient({
       render: (v: number) => <Tag color={v > 3 ? "red" : "orange"}>{v}</Tag>,
     },
     {
-      title: "Самый старый",
+      title: "Oldest pending",
       dataIndex: "oldestPending",
       key: "oldestPending",
       width: 180,
@@ -187,21 +187,21 @@ export default function RiskDashboardClient({
   ];
 
   const unassignedColumns: ColumnsType<UnassignedLesson> = [
-    { title: "Предмет", dataIndex: "subjectName", key: "subjectName" },
+    { title: "Subject", dataIndex: "subjectName", key: "subjectName" },
     {
-      title: "Дата",
+      title: "Date",
       dataIndex: "startsAt",
       key: "startsAt",
       width: 180,
       render: (v: string) => formatDateTime(v),
     },
     {
-      title: "Действие",
+      title: "Action",
       key: "action",
       width: 200,
       render: (_: unknown, record: UnassignedLesson) => (
         <Button size="small" type="primary" onClick={() => setAssignModal(record.id)}>
-          Назначить преподавателя
+          Assign teacher
         </Button>
       ),
     },
@@ -209,36 +209,36 @@ export default function RiskDashboardClient({
 
   return (
     <div>
-      <Typography.Title level={4}>Риск-дашборд</Typography.Title>
+      <Typography.Title level={4}>Risk Dashboard</Typography.Title>
 
       {/* KPI Row */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="В зоне риска"
+              title="At risk"
               value={kpi.atRiskStudents}
               prefix={<WarningOutlined />}
               styles={{ content: { color: kpi.atRiskStudents > 0 ? "#f5222d" : "#52c41a" } }}
-              suffix="студентов"
+              suffix="students"
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Просроченные отчёты"
+              title="Overdue reports"
               value={kpi.overdueTeachers}
               prefix={<ClockCircleOutlined />}
               styles={{ content: { color: kpi.overdueTeachers > 0 ? "#faad14" : "#52c41a" } }}
-              suffix="преподавателей"
+              suffix="teachers"
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Средняя посещаемость (30д)"
+              title="Avg. attendance (30d)"
               value={kpi.avgAttendance}
               prefix={<PercentageOutlined />}
               suffix="%"
@@ -249,7 +249,7 @@ export default function RiskDashboardClient({
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Участие в клубах"
+              title="Club participation"
               value={kpi.participationRate}
               prefix={<TeamOutlined />}
               suffix="%"
@@ -260,10 +260,10 @@ export default function RiskDashboardClient({
 
       {/* Risk Heatmap */}
       <Card
-        title="Карта рисков студентов"
+        title="Student Risk Heatmap"
         extra={
           <Input.Search
-            placeholder="Поиск"
+            placeholder="Search"
             style={{ width: 250 }}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -282,45 +282,45 @@ export default function RiskDashboardClient({
       </Card>
 
       {/* Pending Reports */}
-      <Card title="Преподаватели с незакрытыми отчётами" style={{ marginBottom: 24 }}>
+      <Card title="Teachers with pending reports" style={{ marginBottom: 24 }}>
         <Table
           dataSource={pendingReports}
           columns={reportColumns}
           rowKey="teacherId"
           pagination={false}
           size="small"
-          locale={{ emptyText: "Нет просроченных отчётов" }}
+          locale={{ emptyText: "No overdue reports" }}
         />
       </Card>
 
       {/* Unassigned Lessons */}
-      <Card title="Уроки без преподавателя">
+      <Card title="Lessons without a teacher">
         <Table
           dataSource={unassignedLessons}
           columns={unassignedColumns}
           rowKey="id"
           pagination={false}
           size="small"
-          locale={{ emptyText: "Все уроки назначены" }}
+          locale={{ emptyText: "All lessons are assigned" }}
         />
       </Card>
 
       {/* Assign Teacher Modal */}
       <Modal
-        title="Назначить преподавателя"
+        title="Assign teacher"
         open={!!assignModal}
         onCancel={() => {
           setAssignModal(null);
           setSelectedTeacher(null);
         }}
         onOk={handleAssign}
-        okText="Назначить"
-        cancelText="Отмена"
+        okText="Assign"
+        cancelText="Cancel"
         confirmLoading={assigning}
       >
         <Select
           style={{ width: "100%" }}
-          placeholder="Выберите преподавателя"
+          placeholder="Select a teacher"
           showSearch
           optionFilterProp="label"
           value={selectedTeacher}

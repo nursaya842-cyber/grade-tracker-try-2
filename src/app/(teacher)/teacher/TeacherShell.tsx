@@ -17,9 +17,9 @@ const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
 
 const menuItems = [
-  { key: "/teacher/lessons", icon: <CalendarOutlined />, label: "Уроки" },
-  { key: "/teacher/students", icon: <TeamOutlined />, label: "Студенты" },
-  { key: "/teacher/profile", icon: <UserOutlined />, label: "Профиль" },
+  { key: "/teacher/lessons", icon: <CalendarOutlined />, label: "Lessons" },
+  { key: "/teacher/students", icon: <TeamOutlined />, label: "Students" },
+  { key: "/teacher/profile", icon: <UserOutlined />, label: "Profile" },
 ];
 
 export default function TeacherShell({
@@ -88,7 +88,7 @@ export default function TeacherShell({
           </div>
           {!collapsed && (
             <Text strong style={{ marginLeft: 12, fontSize: 15 }}>
-              Преподаватель
+              Teacher
             </Text>
           )}
         </div>
@@ -125,7 +125,7 @@ export default function TeacherShell({
           <Dropdown
             menu={{
               items: [
-                { key: "logout", icon: <LogoutOutlined />, label: "Выйти", danger: true, onClick: handleSignOut },
+                { key: "logout", icon: <LogoutOutlined />, label: "Sign out", danger: true, onClick: handleSignOut },
               ],
             }}
             placement="bottomRight"

@@ -12,13 +12,13 @@ import {
 import dayjs from "dayjs";
 
 const DAY_OPTIONS = [
-  { label: "Пн", value: 1 },
-  { label: "Вт", value: 2 },
-  { label: "Ср", value: 3 },
-  { label: "Чт", value: 4 },
-  { label: "Пт", value: 5 },
-  { label: "Сб", value: 6 },
-  { label: "Вс", value: 7 },
+  { label: "Mon", value: 1 },
+  { label: "Tue", value: 2 },
+  { label: "Wed", value: 3 },
+  { label: "Thu", value: 4 },
+  { label: "Fri", value: 5 },
+  { label: "Sat", value: 6 },
+  { label: "Sun", value: 7 },
 ];
 
 interface FormOptions {
@@ -88,7 +88,7 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
     }));
 
     if (slots.length === 0) {
-      message.error("Добавьте хотя бы один временной слот");
+      message.error("Add at least one time slot");
       setLoading(false);
       return;
     }
@@ -114,7 +114,7 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
       return;
     }
 
-    message.success(`Создано ${res.lessonCount} уроков`);
+    message.success(`Created ${res.lessonCount} lessons`);
     form.resetFields();
     setConflicts([]);
     onClose();
@@ -123,19 +123,19 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
   return (
     <Modal
       forceRender={mounted}
-      title="Новая серия уроков"
+      title="New lesson series"
       open={open}
       onOk={handleSubmit}
       onCancel={() => { setConflicts([]); onClose(); }}
       confirmLoading={loading}
-      okText="Создать"
-      cancelText="Отмена"
+      okText="Create"
+      cancelText="Cancel"
       width={640}
     >
       {conflicts.length > 0 && (
         <Alert
           type="error"
-          message="Обнаружены конфликты"
+          message="Conflicts detected"
           description={
             <ul style={{ margin: 0, paddingLeft: 16 }}>
               {conflicts.map((c, i) => <li key={i}>{c}</li>)}
@@ -148,59 +148,59 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
       )}
 
       <Form form={form} layout="vertical" requiredMark={false}>
-        <Form.Item name="subjectId" label="Предмет" rules={[{ required: true, message: "Выберите предмет" }]}>
+        <Form.Item name="subjectId" label="Subject" rules={[{ required: true, message: "Select a subject" }]}>
           <Select
-            placeholder="Выберите предмет"
+            placeholder="Select a subject"
             showSearch
             optionFilterProp="label"
             options={formOptions.subjects.map((s) => ({ label: s.name, value: s.id }))}
           />
         </Form.Item>
 
-        <Form.Item name="teacherId" label="Преподаватель" rules={[{ required: true, message: "Выберите преподавателя" }]}>
+        <Form.Item name="teacherId" label="Teacher" rules={[{ required: true, message: "Select a teacher" }]}>
           <Select
-            placeholder="Начните вводить имя преподавателя..."
+            placeholder="Start typing a teacher name..."
             showSearch
             filterOption={false}
             loading={teacherFetching}
             onSearch={handleTeacherSearch}
             onFocus={() => { if (teacherOptions.length === 0) searchTeachersForSchedule("").then(setTeacherOptions); }}
-            notFoundContent={teacherFetching ? "Поиск..." : "Не найдено"}
+            notFoundContent={teacherFetching ? "Searching..." : "Not found"}
             options={teacherOptions.map((t) => ({ label: t.full_name, value: t.id }))}
           />
         </Form.Item>
 
-        <Form.Item name="studentIds" label="Студенты">
+        <Form.Item name="studentIds" label="Students">
           <Select
             mode="multiple"
-            placeholder="Начните вводить имя или email студента..."
+            placeholder="Start typing a student name or email..."
             showSearch
             filterOption={false}
             loading={studentFetching}
             onSearch={handleStudentSearch}
             onFocus={() => { if (studentOptions.length === 0) fetchStudents(""); }}
-            notFoundContent={studentFetching ? "Поиск..." : "Начните вводить имя..."}
+            notFoundContent={studentFetching ? "Searching..." : "Start typing a name..."}
             options={studentOptions.map((s) => ({
-              label: `${s.full_name}${s.course_year ? ` (${s.course_year} курс)` : ""}`,
+              label: `${s.full_name}${s.course_year ? ` (Year ${s.course_year})` : ""}`,
               value: s.id,
             }))}
           />
         </Form.Item>
 
-        <Form.Item name="days" label="Дни недели" rules={[{ required: true, message: "Выберите дни" }]}>
+        <Form.Item name="days" label="Days of the week" rules={[{ required: true, message: "Select days" }]}>
           <Checkbox.Group options={DAY_OPTIONS} />
         </Form.Item>
 
         <Form.List name="slots" initialValue={[{}]}>
           {(fields, { add, remove }) => (
             <>
-              <label style={{ fontWeight: 500, display: "block", marginBottom: 8 }}>Временные слоты</label>
+              <label style={{ fontWeight: 500, display: "block", marginBottom: 8 }}>Time slots</label>
               {fields.map(({ key, ...restField }) => (
                 <Space key={key} align="start" style={{ marginBottom: 8 }}>
                   <Form.Item
                     {...restField}
                     name={[restField.name, "time"]}
-                    rules={[{ required: true, message: "Укажите время" }]}
+                    rules={[{ required: true, message: "Specify time" }]}
                     style={{ marginBottom: 0 }}
                   >
                     <TimePicker.RangePicker format="HH:mm" minuteStep={30} />
@@ -211,13 +211,13 @@ export default function LessonFormModal({ open, onClose, formOptions }: Props) {
                 </Space>
               ))}
               <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} block style={{ marginBottom: 16 }}>
-                Добавить слот
+                Add slot
               </Button>
             </>
           )}
         </Form.List>
 
-        <Form.Item name="dateRange" label="Период" rules={[{ required: true, message: "Укажите период" }]}>
+        <Form.Item name="dateRange" label="Period" rules={[{ required: true, message: "Specify period" }]}>
           <DatePicker.RangePicker style={{ width: "100%" }} format="DD.MM.YYYY" />
         </Form.Item>
       </Form>

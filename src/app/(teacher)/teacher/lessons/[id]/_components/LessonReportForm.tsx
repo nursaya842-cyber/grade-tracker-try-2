@@ -92,7 +92,7 @@ export default function LessonReportForm({
       setFaceIdData(data);
       setFaceIdOpen(true);
     } catch {
-      message.error("Ошибка загрузки данных для Face-ID");
+      message.error("Error loading Face-ID data");
     }
     setFaceIdLoading(false);
   };
@@ -115,7 +115,7 @@ export default function LessonReportForm({
       })
     );
     if (results.length > 0) {
-      message.success(`Face-ID: ${results.length} студентов распознано`);
+      message.success(`Face-ID: ${results.length} students recognized`);
     }
   };
 
@@ -134,14 +134,14 @@ export default function LessonReportForm({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Отчёт успешно отправлен и заблокирован");
+      message.success("Report submitted and locked successfully");
       router.refresh();
     }
   };
 
   const columns = [
     {
-      title: "Студент",
+      title: "Student",
       dataIndex: "fullName",
       key: "fullName",
       render: (_: unknown, __: unknown, idx: number) => (
@@ -149,20 +149,20 @@ export default function LessonReportForm({
       ),
     },
     {
-      title: "Присутствие",
+      title: "Attendance",
       key: "present",
       width: 140,
       render: (_: unknown, __: unknown, idx: number) => (
         <Switch
           checked={rows[idx].present}
           onChange={(checked) => updateRow(idx, { present: checked, method: "manual", faceConfidence: null })}
-          checkedChildren="Здесь"
-          unCheckedChildren="Нет"
+          checkedChildren="Here"
+          unCheckedChildren="No"
         />
       ),
     },
     {
-      title: "Метод",
+      title: "Method",
       key: "method",
       width: 130,
       render: (_: unknown, __: unknown, idx: number) => {
@@ -177,11 +177,11 @@ export default function LessonReportForm({
             </Space>
           );
         }
-        return <Tag>Вручную</Tag>;
+        return <Tag>Manual</Tag>;
       },
     },
     {
-      title: "Оценка",
+      title: "Score",
       key: "score",
       width: 180,
       render: (_: unknown, __: unknown, idx: number) => (
@@ -204,7 +204,7 @@ export default function LessonReportForm({
               })
             }
           >
-            Н/Д
+            N/A
           </Checkbox>
         </Space>
       ),
@@ -219,19 +219,19 @@ export default function LessonReportForm({
         onClick={() => router.push("/teacher/lessons")}
         style={{ marginBottom: 16 }}
       >
-        Назад к урокам
+        Back to Lessons
       </Button>
 
       <Card style={{ marginBottom: 16 }}>
         <Descriptions column={2} size="small">
-          <Descriptions.Item label="Предмет">{subjectName}</Descriptions.Item>
-          <Descriptions.Item label="Преподаватель">
+          <Descriptions.Item label="Subject">{subjectName}</Descriptions.Item>
+          <Descriptions.Item label="Teacher">
             {teacherName}
           </Descriptions.Item>
-          <Descriptions.Item label="Начало">
+          <Descriptions.Item label="Start">
             {formatDateTime(startsAt)}
           </Descriptions.Item>
-          <Descriptions.Item label="Конец">
+          <Descriptions.Item label="End">
             {formatDateTime(endsAt)}
           </Descriptions.Item>
         </Descriptions>
@@ -240,7 +240,7 @@ export default function LessonReportForm({
       <Card
         title={
           <Typography.Title level={5} style={{ margin: 0 }}>
-            Посещаемость и оценки
+            Attendance and Scores
           </Typography.Title>
         }
         extra={
@@ -249,7 +249,7 @@ export default function LessonReportForm({
             onClick={handleOpenFaceId}
             loading={faceIdLoading}
           >
-            Face-ID сканирование
+            Face-ID Scan
           </Button>
         }
         style={{ marginBottom: 16 }}
@@ -264,11 +264,11 @@ export default function LessonReportForm({
 
       <div style={{ textAlign: "right" }}>
         <Popconfirm
-          title="Подтвердить отправку?"
-          description="После отправки отчёт будет заблокирован для редактирования."
+          title="Confirm submission?"
+          description="After submission the report will be locked for editing."
           onConfirm={handleSubmit}
-          okText="Да, отправить"
-          cancelText="Отмена"
+          okText="Yes, submit"
+          cancelText="Cancel"
         >
           <Button
             type="primary"
@@ -276,7 +276,7 @@ export default function LessonReportForm({
             size="large"
             loading={submitting}
           >
-            Отправить отчёт
+            Submit Report
           </Button>
         </Popconfirm>
       </div>

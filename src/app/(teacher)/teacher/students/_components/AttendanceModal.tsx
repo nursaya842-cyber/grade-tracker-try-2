@@ -49,7 +49,7 @@ export default function AttendanceModal({
 
   const columns = [
     {
-      title: "Дата",
+      title: "Date",
       key: "date",
       render: (_: unknown, r: AttendanceRecord) =>
         r.lessons?.starts_at
@@ -57,28 +57,28 @@ export default function AttendanceModal({
           : "—",
     },
     {
-      title: "Предмет",
+      title: "Subject",
       key: "subject",
       render: (_: unknown, r: AttendanceRecord) =>
         r.lessons?.subjects?.name ?? "—",
     },
     {
-      title: "Статус",
+      title: "Status",
       dataIndex: "status",
       key: "status",
       width: 140,
       render: (status: string) =>
         status === "present" ? (
-          <Tag color="green">Присутствует</Tag>
+          <Tag color="green">Present</Tag>
         ) : (
-          <Tag color="red">Отсутствует</Tag>
+          <Tag color="red">Absent</Tag>
         ),
     },
   ];
 
   return (
     <Modal
-      title={`Посещаемость: ${studentName}`}
+      title={`Attendance: ${studentName}`}
       open={!!studentId}
       onCancel={onClose}
       footer={null}
@@ -92,11 +92,11 @@ export default function AttendanceModal({
         <>
           <Row gutter={24} style={{ marginBottom: 24 }}>
             <Col span={8}>
-              <Statistic title="Всего уроков" value={total} />
+              <Statistic title="Total Lessons" value={total} />
             </Col>
             <Col span={8}>
               <Statistic
-                title="Присутствовал"
+                title="Present"
                 value={present}
                 suffix={`/ ${total}`}
               />
@@ -104,7 +104,7 @@ export default function AttendanceModal({
             <Col span={8}>
               <div>
                 <div style={{ marginBottom: 4, fontSize: 14, color: "#666" }}>
-                  Процент посещаемости
+                  Attendance Rate
                 </div>
                 <Progress
                   percent={pct}

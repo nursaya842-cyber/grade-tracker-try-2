@@ -41,9 +41,9 @@ export default function SubjectsPage({ subjects }: { subjects: Subject[] }) {
       : await createSubject(values.name);
     setLoading(false);
     if (res.error) {
-      message.error(res.error.includes("unique") ? "Предмет с таким названием уже существует" : res.error);
+      message.error(res.error.includes("unique") ? "A subject with this name already exists" : res.error);
     } else {
-      message.success(editing ? "Предмет обновлён" : "Предмет создан");
+      message.success(editing ? "Subject updated" : "Subject created");
       setModalOpen(false);
     }
   };
@@ -51,17 +51,17 @@ export default function SubjectsPage({ subjects }: { subjects: Subject[] }) {
   const handleDelete = async (id: string) => {
     const res = await deleteSubject(id);
     if (res.error) message.error(res.error);
-    else message.success("Предмет удалён");
+    else message.success("Subject deleted");
   };
 
   const columns: ColumnsType<Subject> = [
-    { title: "Название", dataIndex: "name", key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
+    { title: "Name", dataIndex: "name", key: "name", sorter: (a, b) => a.name.localeCompare(b.name) },
     {
-      title: "Действия", key: "actions", width: 120,
+      title: "Actions", key: "actions", width: 120,
       render: (_, record) => (
         <Space size="small">
           <Button type="text" size="small" icon={<EditOutlined />} onClick={() => openEdit(record)} />
-          <Popconfirm title="Удалить предмет?" onConfirm={() => handleDelete(record.id)} okText="Удалить" cancelText="Отмена">
+          <Popconfirm title="Delete subject?" onConfirm={() => handleDelete(record.id)} okText="Delete" cancelText="Cancel">
             <Button type="text" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -72,23 +72,23 @@ export default function SubjectsPage({ subjects }: { subjects: Subject[] }) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Typography.Title level={4} style={{ margin: 0 }}>Предметы</Typography.Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Добавить</Button>
+        <Typography.Title level={4} style={{ margin: 0 }}>Subjects</Typography.Title>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Add</Button>
       </div>
       <Table dataSource={subjects} columns={columns} rowKey="id" pagination={{ pageSize: 20 }} size="middle" />
       <Modal
         forceRender={mounted}
-        title={editing ? "Редактировать предмет" : "Новый предмет"}
+        title={editing ? "Edit Subject" : "New Subject"}
         open={modalOpen}
         onOk={handleSubmit}
         onCancel={() => setModalOpen(false)}
         confirmLoading={loading}
-        okText={editing ? "Сохранить" : "Создать"}
-        cancelText="Отмена"
+        okText={editing ? "Save" : "Create"}
+        cancelText="Cancel"
       >
         <Form form={form} layout="vertical" requiredMark={false}>
-          <Form.Item name="name" label="Название" rules={[{ required: true, message: "Введите название" }]}>
-            <Input placeholder="Математика" />
+          <Form.Item name="name" label="Name" rules={[{ required: true, message: "Enter name" }]}>
+            <Input placeholder="Mathematics" />
           </Form.Item>
         </Form>
       </Modal>

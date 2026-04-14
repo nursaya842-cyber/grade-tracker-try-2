@@ -11,7 +11,7 @@ async function getStudentContext() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Не авторизован");
+  if (!user) throw new Error("Not authorized");
   const effectiveId = await getEffectiveUserIdFromCookies(user.id);
   return { supabase, effectiveId, authUser: user };
 }
@@ -45,7 +45,7 @@ export async function fetchStudentSchedule(start: string, end: string) {
     return {
       id: l.id,
       type: "lesson" as const,
-      title: l.subjects?.name ?? "Урок",
+      title: l.subjects?.name ?? "Lesson",
       teacherName: l.teacher?.full_name ?? "—",
       startsAt: l.starts_at,
       endsAt: l.ends_at,
@@ -77,7 +77,7 @@ export async function fetchStudentSchedule(start: string, end: string) {
     return {
       id: a.id,
       type: "event" as const,
-      title: `${a.clubs?.name ?? "Клуб"}: ${a.title}`,
+      title: `${a.clubs?.name ?? "Club"}: ${a.title}`,
       venue: a.venue,
       clubName: a.clubs?.name ?? "—",
       startsAt: a.starts_at,
@@ -264,7 +264,7 @@ export async function addClubMember(clubId: string, studentId: string) {
     .eq("head_student_id", effectiveId)
     .single();
 
-  if (!club) return { error: "Нет доступа" };
+  if (!club) return { error: "Access denied" };
 
   const { error } = await supabase
     .from("club_members")
@@ -285,7 +285,7 @@ export async function removeClubMember(clubId: string, studentId: string) {
     .eq("head_student_id", effectiveId)
     .single();
 
-  if (!club) return { error: "Нет доступа" };
+  if (!club) return { error: "Access denied" };
 
   const { error } = await supabase
     .from("club_members")
@@ -321,7 +321,7 @@ export async function createClubAnnouncement(
     .eq("head_student_id", effectiveId)
     .single();
 
-  if (!club) return { error: "Нет доступа" };
+  if (!club) return { error: "Access denied" };
 
   const { error } = await supabase.from("club_announcements").insert({
     club_id: clubId,
@@ -457,14 +457,14 @@ export async function changeStudentPassword(
   const { supabase, authUser } = await getStudentContext();
 
   const email = authUser.email;
-  if (!email) return { error: "Email не найден" };
+  if (!email) return { error: "Email not found" };
 
   const { error: signInErr } = await supabase.auth.signInWithPassword({
     email,
     password: currentPassword,
   });
 
-  if (signInErr) return { error: "Неверный текущий пароль" };
+  if (signInErr) return { error: "Incorrect current password" };
 
   const { error: updateErr } = await supabase.auth.updateUser({
     password: newPassword,

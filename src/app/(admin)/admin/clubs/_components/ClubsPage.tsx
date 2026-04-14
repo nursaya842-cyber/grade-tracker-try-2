@@ -56,7 +56,7 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
     setLoading(false);
     if (res.error) message.error(res.error);
     else {
-      message.success(editing ? "Клуб обновлён" : "Клуб создан");
+      message.success(editing ? "Club updated" : "Club created");
       setFormOpen(false);
     }
   };
@@ -64,18 +64,18 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
   const handleDelete = async (id: string) => {
     const res = await deleteClub(id);
     if (res.error) message.error(res.error);
-    else message.success("Клуб удалён");
+    else message.success("Club deleted");
   };
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Typography.Title level={4} style={{ margin: 0 }}>Клубы</Typography.Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Добавить</Button>
+        <Typography.Title level={4} style={{ margin: 0 }}>Clubs</Typography.Title>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Add</Button>
       </div>
 
       {clubs.length === 0 ? (
-        <Empty description="Нет клубов" />
+        <Empty description="No clubs" />
       ) : (
         <Row gutter={[16, 16]}>
           {clubs.map((club) => (
@@ -83,10 +83,10 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
               <Card
                 style={{ borderRadius: 12 }}
                 actions={[
-                  <Button key="edit" type="text" icon={<EditOutlined />} onClick={() => openEdit(club)}>Ред.</Button>,
-                  <Button key="ann" type="text" icon={<NotificationOutlined />} onClick={() => setAnnouncementClubId(club.id)}>Объяв.</Button>,
-                  <Popconfirm key="del" title="Удалить клуб?" onConfirm={() => handleDelete(club.id)} okText="Да" cancelText="Нет">
-                    <Button type="text" danger icon={<DeleteOutlined />}>Удал.</Button>
+                  <Button key="edit" type="text" icon={<EditOutlined />} onClick={() => openEdit(club)}>Edit</Button>,
+                  <Button key="ann" type="text" icon={<NotificationOutlined />} onClick={() => setAnnouncementClubId(club.id)}>Announce</Button>,
+                  <Popconfirm key="del" title="Delete club?" onConfirm={() => handleDelete(club.id)} okText="Yes" cancelText="No">
+                    <Button type="text" danger icon={<DeleteOutlined />}>Delete</Button>
                   </Popconfirm>,
                 ]}
               >
@@ -95,14 +95,14 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
                   title={club.name}
                   description={
                     <Space orientation="vertical" size={2}>
-                      <span>Глава: {club.headName}</span>
-                      <span>Участников: <strong>{club.memberCount}</strong></span>
+                      <span>Head: {club.headName}</span>
+                      <span>Members: <strong>{club.memberCount}</strong></span>
                     </Space>
                   }
                 />
                 <Collapse ghost style={{ marginTop: 12 }} items={[{
                   key: "announcements",
-                  label: "Объявления",
+                  label: "Announcements",
                   children: <AnnouncementsList clubId={club.id} />,
                 }]} />
               </Card>
@@ -113,32 +113,32 @@ export default function ClubsPage({ clubs, students }: { clubs: Club[]; students
 
       <Modal
         forceRender={mounted}
-        title={editing ? "Редактировать клуб" : "Новый клуб"}
+        title={editing ? "Edit club" : "New club"}
         open={formOpen}
         onOk={handleSubmit}
         onCancel={() => setFormOpen(false)}
         confirmLoading={loading}
-        okText={editing ? "Сохранить" : "Создать"}
-        cancelText="Отмена"
+        okText={editing ? "Save" : "Create"}
+        cancelText="Cancel"
       >
         <Form form={form} layout="vertical" requiredMark={false}>
-          <Form.Item name="name" label="Название" rules={[{ required: true, message: "Введите название" }]}>
-            <Input placeholder="Шахматный клуб" />
+          <Form.Item name="name" label="Name" rules={[{ required: true, message: "Enter name" }]}>
+            <Input placeholder="Chess Club" />
           </Form.Item>
-          <Form.Item name="headStudentId" label="Глава клуба" rules={[{ required: true, message: "Выберите главу" }]}>
+          <Form.Item name="headStudentId" label="Club head" rules={[{ required: true, message: "Select club head" }]}>
             <Select
               showSearch
               optionFilterProp="label"
-              placeholder="Выберите студента"
+              placeholder="Select a student"
               options={students.map((s) => ({ label: s.full_name, value: s.id }))}
             />
           </Form.Item>
-          <Form.Item name="memberIds" label="Участники">
+          <Form.Item name="memberIds" label="Members">
             <Select
               mode="multiple"
               showSearch
               optionFilterProp="label"
-              placeholder="Выберите участников"
+              placeholder="Select members"
               options={students.map((s) => ({ label: s.full_name, value: s.id }))}
             />
           </Form.Item>

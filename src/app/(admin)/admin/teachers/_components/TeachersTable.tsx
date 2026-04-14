@@ -40,7 +40,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
   const handleDelete = async (id: string) => {
     const res = await deleteTeacher(id);
     if (res.error) message.error(res.error);
-    else message.success("Преподаватель удалён");
+    else message.success("Teacher deleted");
   };
 
   const handleResetPassword = async () => {
@@ -49,7 +49,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
     const res = await resetPassword(resetUserId, values.newPassword);
     if (res.error) message.error(res.error);
     else {
-      message.success("Пароль сброшен");
+      message.success("Password reset");
       setResetOpen(false);
       resetForm.resetFields();
     }
@@ -65,7 +65,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
 
   const columns: ColumnsType<Teacher> = [
     {
-      title: "Имя",
+      title: "Name",
       dataIndex: "full_name",
       key: "full_name",
       sorter: (a, b) => a.full_name.localeCompare(b.full_name),
@@ -76,7 +76,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
       key: "email",
     },
     {
-      title: "Диплом",
+      title: "Diploma",
       key: "diploma",
       render: (_, record) =>
         record.diploma_url ? (
@@ -86,14 +86,14 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
             icon={<FileTextOutlined />}
             onClick={() => handleViewDiploma(record.diploma_url!)}
           >
-            Открыть
+            Open
           </Button>
         ) : (
           <span style={{ color: "#999" }}>—</span>
         ),
     },
     {
-      title: "Дата создания",
+      title: "Created at",
       dataIndex: "created_at",
       key: "created_at",
       render: (v: string) => formatDateTime(v),
@@ -101,7 +101,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     },
     {
-      title: "Действия",
+      title: "Actions",
       key: "actions",
       width: 200,
       render: (_, record) => (
@@ -110,7 +110,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
             type="text"
             size="small"
             icon={<LoginOutlined />}
-            title="Войти как"
+            title="Log in as"
             onClick={() => startImpersonation(record.id)}
           />
           <Button
@@ -132,11 +132,11 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
             }}
           />
           <Popconfirm
-            title="Удалить преподавателя?"
-            description="Будущие уроки будут отвязаны."
+            title="Delete teacher?"
+            description="Future lessons will be unlinked."
             onConfirm={() => handleDelete(record.id)}
-            okText="Удалить"
-            cancelText="Отмена"
+            okText="Delete"
+            cancelText="Cancel"
           >
             <Button type="text" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -149,7 +149,7 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Преподаватели
+          Teachers
         </Typography.Title>
         <Button
           type="primary"
@@ -159,12 +159,12 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
             setFormOpen(true);
           }}
         >
-          Добавить
+          Add
         </Button>
       </div>
 
       <Input.Search
-        placeholder="Поиск по имени или email..."
+        placeholder="Search by name or email..."
         allowClear
         onChange={(e) => setSearch(e.target.value)}
         style={{ marginBottom: 16, maxWidth: 360 }}
@@ -188,25 +188,25 @@ export default function TeachersTable({ teachers }: { teachers: Teacher[] }) {
       />
 
       <Modal
-        title="Сброс пароля"
+        title="Reset password"
         open={resetOpen}
         onOk={handleResetPassword}
         onCancel={() => {
           setResetOpen(false);
           resetForm.resetFields();
         }}
-        okText="Сбросить"
+        okText="Reset"
       >
         <Form form={resetForm} layout="vertical">
           <Form.Item
             name="newPassword"
-            label="Новый пароль"
+            label="New password"
             rules={[
-              { required: true, message: "Введите пароль" },
-              { min: 6, message: "Минимум 6 символов" },
+              { required: true, message: "Enter password" },
+              { min: 6, message: "Minimum 6 characters" },
             ]}
           >
-            <Input.Password placeholder="Новый пароль" />
+            <Input.Password placeholder="New password" />
           </Form.Item>
         </Form>
       </Modal>

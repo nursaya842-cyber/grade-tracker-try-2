@@ -47,7 +47,7 @@ export default function StudentSocialModal({ studentId, onClose }: Props) {
 
   return (
     <Modal
-      title="Социальная активность"
+      title="Social Activity"
       open={!!studentId}
       onCancel={onClose}
       footer={null}
@@ -57,7 +57,7 @@ export default function StudentSocialModal({ studentId, onClose }: Props) {
       {loading ? (
         <Spin style={{ display: "block", margin: "40px auto" }} />
       ) : data.length === 0 ? (
-        <Empty description="Нет записей на мероприятия" />
+        <Empty description="No event sign-ups" />
       ) : (
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={data}>
@@ -70,7 +70,7 @@ export default function StudentSocialModal({ studentId, onClose }: Props) {
               dataKey="count"
               stroke="#722ed1"
               strokeWidth={2}
-              name="Записи"
+              name="Sign-ups"
               dot={{ r: 4 }}
             />
           </LineChart>

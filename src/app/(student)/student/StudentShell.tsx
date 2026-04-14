@@ -40,13 +40,13 @@ export default function StudentShell({
   };
 
   const menuItems = [
-    { key: "/student/schedule", icon: <CalendarOutlined />, label: "Расписание" },
-    { key: "/student/my-clubs", icon: <TeamOutlined />, label: "Мои клубы" },
+    { key: "/student/schedule", icon: <CalendarOutlined />, label: "Schedule" },
+    { key: "/student/my-clubs", icon: <TeamOutlined />, label: "My Clubs" },
     ...(isClubHead
-      ? [{ key: "/student/my-club", icon: <CrownOutlined />, label: "Мой клуб" }]
+      ? [{ key: "/student/my-club", icon: <CrownOutlined />, label: "My Club" }]
       : []),
-    { key: "/student/announcements", icon: <NotificationOutlined />, label: "Объявления" },
-    { key: "/student/profile", icon: <UserOutlined />, label: "Профиль" },
+    { key: "/student/announcements", icon: <NotificationOutlined />, label: "Announcements" },
+    { key: "/student/profile", icon: <UserOutlined />, label: "Profile" },
   ];
 
   const selectedKey =
@@ -96,7 +96,7 @@ export default function StudentShell({
           </div>
           {!collapsed && (
             <Text strong style={{ marginLeft: 12, fontSize: 15 }}>
-              Студент
+              Student
             </Text>
           )}
         </div>
@@ -133,7 +133,7 @@ export default function StudentShell({
           <Dropdown
             menu={{
               items: [
-                { key: "logout", icon: <LogoutOutlined />, label: "Выйти", danger: true, onClick: handleSignOut },
+                { key: "logout", icon: <LogoutOutlined />, label: "Sign Out", danger: true, onClick: handleSignOut },
               ],
             }}
             placement="bottomRight"

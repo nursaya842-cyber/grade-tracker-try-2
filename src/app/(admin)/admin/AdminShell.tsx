@@ -25,17 +25,17 @@ const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
 
 const menuItems = [
-  { key: "/admin", icon: <DashboardOutlined />, label: "Главная" },
-  { key: "/admin/teachers", icon: <TeamOutlined />, label: "Преподаватели" },
-  { key: "/admin/students", icon: <UserOutlined />, label: "Студенты" },
-  { key: "/admin/faculties", icon: <BankOutlined />, label: "Факультеты" },
-  { key: "/admin/parents", icon: <UsergroupAddOutlined />, label: "Родители" },
-  { key: "/admin/subjects", icon: <BookOutlined />, label: "Предметы" },
-  { key: "/admin/schedule", icon: <CalendarOutlined />, label: "Расписание" },
-  { key: "/admin/clubs", icon: <TrophyOutlined />, label: "Клубы" },
-  { key: "/admin/analytics", icon: <BarChartOutlined />, label: "Аналитика" },
-  { key: "/admin/risk-dashboard", icon: <AlertOutlined />, label: "Риск-дашборд" },
-  { key: "/admin/effectiveness", icon: <RocketOutlined />, label: "Эффективность" },
+  { key: "/admin", icon: <DashboardOutlined />, label: "Home" },
+  { key: "/admin/teachers", icon: <TeamOutlined />, label: "Teachers" },
+  { key: "/admin/students", icon: <UserOutlined />, label: "Students" },
+  { key: "/admin/faculties", icon: <BankOutlined />, label: "Faculties" },
+  { key: "/admin/parents", icon: <UsergroupAddOutlined />, label: "Parents" },
+  { key: "/admin/subjects", icon: <BookOutlined />, label: "Subjects" },
+  { key: "/admin/schedule", icon: <CalendarOutlined />, label: "Schedule" },
+  { key: "/admin/clubs", icon: <TrophyOutlined />, label: "Clubs" },
+  { key: "/admin/analytics", icon: <BarChartOutlined />, label: "Analytics" },
+  { key: "/admin/risk-dashboard", icon: <AlertOutlined />, label: "Risk Dashboard" },
+  { key: "/admin/effectiveness", icon: <RocketOutlined />, label: "Effectiveness" },
 ];
 
 export default function AdminShell({
@@ -156,7 +156,7 @@ export default function AdminShell({
                 {
                   key: "logout",
                   icon: <LogoutOutlined />,
-                  label: "Выйти",
+                  label: "Sign Out",
                   danger: true,
                   onClick: handleSignOut,
                 },

@@ -21,7 +21,7 @@ async function getTeacherId() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Не авторизован");
+  if (!user) throw new Error("Unauthorized");
   const effectiveId = await getEffectiveUserIdFromCookies(user.id);
   return { supabase, effectiveId, authUser: user };
 }
@@ -92,7 +92,7 @@ interface ReportEntry {
   studentId: string;
   status: "present" | "absent";
   method?: "manual" | "face_id";
-  score: number | null; // null = Н/Д
+  score: number | null; // null = N/A
 }
 
 export async function submitLessonReport(
@@ -110,8 +110,8 @@ export async function submitLessonReport(
     .is("deleted_at", null)
     .single();
 
-  if (!lesson) return { error: "Урок не найден или нет доступа" };
-  if (lesson.report_submitted_at) return { error: "Отчёт уже заблокирован" };
+  if (!lesson) return { error: "Lesson not found or access denied" };
+  if (lesson.report_submitted_at) return { error: "Report already locked" };
 
   // Upsert attendance
   const attendanceRows = entries.map((e) => ({
@@ -126,7 +126,7 @@ export async function submitLessonReport(
     const { error } = await supabase.from("attendance").upsert(row, {
       onConflict: "lesson_id,student_id",
     });
-    if (error) return { error: `Ошибка посещаемости: ${error.message}` };
+    if (error) return { error: `Attendance error: ${error.message}` };
   }
 
   // Upsert grades
@@ -141,7 +141,7 @@ export async function submitLessonReport(
     const { error } = await supabase.from("grades").upsert(row, {
       onConflict: "lesson_id,student_id",
     });
-    if (error) return { error: `Ошибка оценок: ${error.message}` };
+    if (error) return { error: `Grades error: ${error.message}` };
   }
 
   // Lock the report
@@ -150,7 +150,7 @@ export async function submitLessonReport(
     .update({ report_submitted_at: new Date().toISOString() })
     .eq("id", lessonId);
 
-  if (lockErr) return { error: `Ошибка блокировки: ${lockErr.message}` };
+  if (lockErr) return { error: `Lock error: ${lockErr.message}` };
 
   revalidatePath("/teacher/lessons");
   revalidatePath(`/teacher/lessons/${lessonId}`);
@@ -163,7 +163,7 @@ export async function unlockLessonReport(lessonId: string) {
 
   // Only real admin can unlock
   const realRole = authUser.user_metadata?.role;
-  if (realRole !== "admin") return { error: "Только администратор может разблокировать отчёт" };
+  if (realRole !== "admin") return { error: "Only admin can unlock the report" };
 
   const { error } = await supabase
     .from("lessons")
@@ -322,14 +322,14 @@ export async function changePassword(
 
   // Re-authenticate
   const email = authUser.email;
-  if (!email) return { error: "Email не найден" };
+  if (!email) return { error: "Email not found" };
 
   const { error: signInErr } = await supabase.auth.signInWithPassword({
     email,
     password: currentPassword,
   });
 
-  if (signInErr) return { error: "Неверный текущий пароль" };
+  if (signInErr) return { error: "Incorrect current password" };
 
   const { error: updateErr } = await supabase.auth.updateUser({
     password: newPassword,

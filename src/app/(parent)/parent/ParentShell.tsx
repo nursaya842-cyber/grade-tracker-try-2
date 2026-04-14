@@ -16,8 +16,8 @@ const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
 
 const menuItems = [
-  { key: "/parent/children", icon: <TeamOutlined />, label: "Мои дети" },
-  { key: "/parent/profile", icon: <UserOutlined />, label: "Профиль" },
+  { key: "/parent/children", icon: <TeamOutlined />, label: "My Children" },
+  { key: "/parent/profile", icon: <UserOutlined />, label: "Profile" },
 ];
 
 export default function ParentShell({
@@ -131,7 +131,7 @@ export default function ParentShell({
                 {
                   key: "logout",
                   icon: <LogoutOutlined />,
-                  label: "Выйти",
+                  label: "Sign Out",
                   danger: true,
                   onClick: handleSignOut,
                 },

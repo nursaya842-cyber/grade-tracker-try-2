@@ -120,7 +120,7 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
         childrenIds: values.childrenIds ?? [],
       });
       if (res.error) message.error(res.error);
-      else { message.success("Родитель обновлён"); setFormOpen(false); navigate({ page: 1 }); }
+      else { message.success("Parent updated"); setFormOpen(false); navigate({ page: 1 }); }
     } else {
       const res = await createParent({
         email: values.email,
@@ -129,7 +129,7 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
         childrenIds: values.childrenIds ?? [],
       });
       if (res.error) message.error(res.error);
-      else { message.success("Родитель создан"); setFormOpen(false); navigate({ page: 1 }); }
+      else { message.success("Parent created"); setFormOpen(false); navigate({ page: 1 }); }
     }
     setLoading(false);
   };
@@ -137,7 +137,7 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
   const handleDelete = async (id: string) => {
     const res = await deleteParent(id);
     if (res.error) message.error(res.error);
-    else { message.success("Родитель удалён"); navigate({ page: 1 }); }
+    else { message.success("Parent deleted"); navigate({ page: 1 }); }
   };
 
   const handleResetPassword = async () => {
@@ -145,12 +145,12 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
     if (!resetUserId) return;
     const res = await resetPassword(resetUserId, values.newPassword);
     if (res.error) message.error(res.error);
-    else { message.success("Пароль сброшен"); setResetOpen(false); resetForm.resetFields(); }
+    else { message.success("Password reset"); setResetOpen(false); resetForm.resetFields(); }
   };
 
   const columns: ColumnsType<Parent> = [
     {
-      title: "ФИО",
+      title: "Full Name",
       dataIndex: "full_name",
       key: "full_name",
     },
@@ -160,7 +160,7 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
       key: "email",
     },
     {
-      title: "Дети",
+      title: "Children",
       key: "children",
       render: (_, record) =>
         record.children.length > 0
@@ -170,21 +170,21 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
           : <span style={{ color: "#999" }}>—</span>,
     },
     {
-      title: "Дата создания",
+      title: "Created at",
       dataIndex: "created_at",
       key: "created_at",
       render: (v: string) => formatDateTime(v),
       responsive: ["lg"] as const,
     },
     {
-      title: "Действия",
+      title: "Actions",
       key: "actions",
       width: 130,
       render: (_, record) => (
         <Space size="small">
           <Button type="text" size="small" icon={<EditOutlined />} onClick={() => openForm(record)} />
           <Button type="text" size="small" icon={<KeyOutlined />} onClick={() => { setResetUserId(record.id); setResetOpen(true); }} />
-          <Popconfirm title="Удалить родителя?" onConfirm={() => handleDelete(record.id)} okText="Удалить" cancelText="Отмена">
+          <Popconfirm title="Delete parent?" onConfirm={() => handleDelete(record.id)} okText="Delete" cancelText="Cancel">
             <Button type="text" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -196,16 +196,16 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Родители <span style={{ fontSize: 14, fontWeight: 400, color: "#8c8c8c" }}>({total})</span>
+          Parents <span style={{ fontSize: 14, fontWeight: 400, color: "#8c8c8c" }}>({total})</span>
         </Typography.Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => openForm()}>
-          Добавить
+          Add
         </Button>
       </div>
 
       <Input
         prefix={<SearchOutlined />}
-        placeholder="Поиск по имени или email..."
+        placeholder="Search by name or email..."
         allowClear
         value={searchVal}
         style={{ marginBottom: 16, maxWidth: 360 }}
@@ -235,7 +235,7 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
           pageSize,
           total,
           showSizeChanger: false,
-          showTotal: (t, range) => `${range[0]}-${range[1]} из ${t}`,
+          showTotal: (t, range) => `${range[0]}-${range[1]} of ${t}`,
           onChange: (p) => navigate({ page: p }),
         }}
       />
@@ -243,45 +243,45 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
       {/* Create/Edit Modal */}
       <Modal
         forceRender={mounted}
-        title={editing ? "Редактировать родителя" : "Новый родитель"}
+        title={editing ? "Edit parent" : "New parent"}
         open={formOpen}
         onOk={handleSubmit}
         onCancel={() => { setFormOpen(false); setEditing(null); form.resetFields(); }}
         confirmLoading={loading}
-        okText={editing ? "Сохранить" : "Создать"}
-        cancelText="Отмена"
+        okText={editing ? "Save" : "Create"}
+        cancelText="Cancel"
         width={600}
       >
         <Form form={form} layout="vertical" requiredMark={false}>
-          <Form.Item name="fullName" label="ФИО" rules={[{ required: true, message: "Введите ФИО" }]}>
-            <Input placeholder="Иванова Мария Петровна" />
+          <Form.Item name="fullName" label="Full Name" rules={[{ required: true, message: "Enter full name" }]}>
+            <Input placeholder="Jane Smith" />
           </Form.Item>
           <Form.Item
             name="email"
             label="Email"
-            rules={[{ required: true, message: "Введите email" }, { type: "email", message: "Некорректный email" }]}
+            rules={[{ required: true, message: "Enter email" }, { type: "email", message: "Invalid email" }]}
           >
             <Input placeholder="parent@example.com" />
           </Form.Item>
           {!editing && (
             <Form.Item
               name="password"
-              label="Пароль"
-              rules={[{ required: true, message: "Введите пароль" }, { min: 6, message: "Минимум 6 символов" }]}
+              label="Password"
+              rules={[{ required: true, message: "Enter password" }, { min: 6, message: "Minimum 6 characters" }]}
             >
-              <Input.Password placeholder="Пароль" />
+              <Input.Password placeholder="Password" />
             </Form.Item>
           )}
-          <Form.Item name="childrenIds" label="Дети (студенты)">
+          <Form.Item name="childrenIds" label="Children (students)">
             <Select
               mode="multiple"
-              placeholder="Начните вводить имя или email студента..."
+              placeholder="Start typing a student name or email..."
               showSearch
               filterOption={false}
               loading={studentFetching}
               onSearch={handleStudentSearch}
               onFocus={() => { if (studentOptions.length === 0) fetchStudents(""); }}
-              notFoundContent={studentFetching ? "Поиск..." : "Не найдено"}
+              notFoundContent={studentFetching ? "Searching..." : "Not found"}
               options={studentOptions.map((s) => ({
                 label: `${s.full_name} (${s.email})`,
                 value: s.id,
@@ -295,19 +295,19 @@ export default function ParentsTable({ parents, total, page, pageSize, search: i
       {/* Reset Password Modal */}
       <Modal
         forceRender={mounted}
-        title="Сброс пароля"
+        title="Reset password"
         open={resetOpen}
         onOk={handleResetPassword}
         onCancel={() => { setResetOpen(false); resetForm.resetFields(); }}
-        okText="Сбросить"
+        okText="Reset"
       >
         <Form form={resetForm} layout="vertical">
           <Form.Item
             name="newPassword"
-            label="Новый пароль"
-            rules={[{ required: true, message: "Введите пароль" }, { min: 6, message: "Минимум 6 символов" }]}
+            label="New password"
+            rules={[{ required: true, message: "Enter password" }, { min: 6, message: "Minimum 6 characters" }]}
           >
-            <Input.Password placeholder="Новый пароль" />
+            <Input.Password placeholder="New password" />
           </Form.Item>
         </Form>
       </Modal>

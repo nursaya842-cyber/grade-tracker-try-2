@@ -10,11 +10,11 @@ interface Props {
 }
 
 const questions = [
-  { key: "stressLevel", label: "Уровень стресса", low: "Нет стресса", high: "Сильный стресс" },
-  { key: "motivationLevel", label: "Мотивация к учёбе", low: "Нет мотивации", high: "Высокая" },
-  { key: "workloadFeeling", label: "Ощущение нагрузки", low: "Лёгкая", high: "Перегруз" },
-  { key: "understanding", label: "Понимание материала", low: "Не понимаю", high: "Всё понятно" },
-  { key: "satisfaction", label: "Удовлетворённость обучением", low: "Не доволен", high: "Доволен" },
+  { key: "stressLevel", label: "Stress Level", low: "No stress", high: "High stress" },
+  { key: "motivationLevel", label: "Motivation to Study", low: "No motivation", high: "High" },
+  { key: "workloadFeeling", label: "Workload Feeling", low: "Light", high: "Overloaded" },
+  { key: "understanding", label: "Understanding of Material", low: "Don't understand", high: "Fully clear" },
+  { key: "satisfaction", label: "Satisfaction with Studies", low: "Not satisfied", high: "Satisfied" },
 ];
 
 export default function WeeklyCheckinBanner({ hasCheckin }: Props) {
@@ -47,7 +47,7 @@ export default function WeeklyCheckinBanner({ hasCheckin }: Props) {
     if (res.error) {
       message.error(res.error);
     } else {
-      message.success("Спасибо за ответы!");
+      message.success("Thank you for your responses!");
       setOpen(false);
     }
   };
@@ -65,31 +65,31 @@ export default function WeeklyCheckinBanner({ hasCheckin }: Props) {
           <Space>
             <FormOutlined style={{ fontSize: 20, color: "#722ed1" }} />
             <div>
-              <Typography.Text strong>Еженедельный опрос</Typography.Text>
+              <Typography.Text strong>Weekly Check-in</Typography.Text>
               <br />
               <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                Расскажите как прошла ваша неделя — это займёт 1 минуту
+                Tell us how your week went — it takes 1 minute
               </Typography.Text>
             </div>
           </Space>
           <Button type="primary" onClick={() => setOpen(true)} style={{ background: "#722ed1", borderColor: "#722ed1" }}>
-            Пройти опрос
+            Take the survey
           </Button>
         </div>
       </Card>
 
       <Modal
-        title="Еженедельный Check-in"
+        title="Weekly Check-in"
         open={open}
         onOk={handleSubmit}
         onCancel={() => setOpen(false)}
         confirmLoading={loading}
-        okText="Отправить"
-        cancelText="Позже"
+        okText="Submit"
+        cancelText="Later"
         width={560}
       >
         <Typography.Paragraph type="secondary" style={{ marginBottom: 20 }}>
-          Оцените от 1 до 10, где 1 — минимум, 10 — максимум
+          Rate from 1 to 10, where 1 is the minimum and 10 is the maximum
         </Typography.Paragraph>
 
         {questions.map((q) => (
@@ -119,11 +119,11 @@ export default function WeeklyCheckinBanner({ hasCheckin }: Props) {
 
         <div style={{ marginTop: 8 }}>
           <Typography.Text strong style={{ display: "block", marginBottom: 4 }}>
-            Комментарий (необязательно)
+            Comment (optional)
           </Typography.Text>
           <Input.TextArea
             rows={2}
-            placeholder="Что-то хотите добавить?"
+            placeholder="Anything you want to add?"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />

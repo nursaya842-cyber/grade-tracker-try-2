@@ -23,7 +23,7 @@ export default function LoginPage() {
       });
 
       if (error) {
-        message.error("Неверный email или пароль");
+        message.error("Invalid email or password");
         setLoading(false);
         return;
       }
@@ -38,7 +38,7 @@ export default function LoginPage() {
 
       router.refresh();
     } catch {
-      message.error("Ошибка подключения к серверу");
+      message.error("Connection error. Please try again.");
       setLoading(false);
     }
   };
@@ -124,7 +124,7 @@ export default function LoginPage() {
             KBTU CVM System
           </Title>
           <Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 14 }}>
-            Войдите в систему управления
+            Sign in to the management system
           </Text>
         </div>
 
@@ -154,8 +154,8 @@ export default function LoginPage() {
                 </span>
               }
               rules={[
-                { required: true, message: "Введите email" },
-                { type: "email", message: "Некорректный email" },
+                { required: true, message: "Enter email" },
+                { type: "email", message: "Invalid email" },
               ]}
             >
               <Input
@@ -175,10 +175,10 @@ export default function LoginPage() {
               name="password"
               label={
                 <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 13, fontWeight: 500 }}>
-                  Пароль
+                  Password
                 </span>
               }
-              rules={[{ required: true, message: "Введите пароль" }]}
+              rules={[{ required: true, message: "Enter password" }]}
             >
               <Input.Password
                 prefix={<LockOutlined style={{ color: "rgba(255,255,255,0.3)" }} />}
@@ -209,7 +209,7 @@ export default function LoginPage() {
                   boxShadow: "0 4px 16px rgba(22,119,255,0.35)",
                 }}
               >
-                Войти
+                Sign In
               </Button>
             </Form.Item>
           </Form>
@@ -224,7 +224,7 @@ export default function LoginPage() {
             fontSize: 12,
           }}
         >
-          Для получения доступа обратитесь к администратору
+          Contact your administrator to get access
         </Text>
       </div>
     </div>

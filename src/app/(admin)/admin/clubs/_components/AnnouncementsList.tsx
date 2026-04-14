@@ -17,7 +17,7 @@ export default function AnnouncementsList({ clubId }: { clubId: string }) {
   }, [clubId]);
 
   if (loading) return <Spin size="small" />;
-  if (items.length === 0) return <Empty description="Нет объявлений" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+  if (items.length === 0) return <Empty description="No announcements" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -28,9 +28,9 @@ export default function AnnouncementsList({ clubId }: { clubId: string }) {
             <Typography.Text strong>{item.title as string}</Typography.Text>
             <div style={{ fontSize: 13, color: "#666", marginTop: 2 }}>
               {formatDateTime(item.starts_at as string)}
-              {item.venue ? <> · Место: {String(item.venue)}</> : null}
+              {item.venue ? <> · Venue: {String(item.venue)}</> : null}
             </div>
-            <Tag color="blue" style={{ marginTop: 4 }}>{signups.length} записей</Tag>
+            <Tag color="blue" style={{ marginTop: 4 }}>{signups.length} sign-ups</Tag>
           </Card>
         );
       })}

@@ -50,11 +50,11 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
 
     const { error } = await supabase.storage.from("diplomas").upload(path, file);
     if (error) {
-      message.error("Ошибка загрузки файла");
+      message.error("File upload error");
       return false;
     }
     setDiplomaPath(path);
-    message.success("Файл загружен");
+    message.success("File uploaded");
     return false; // prevent default upload behavior
   };
 
@@ -70,7 +70,7 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
       });
       if (res.error) message.error(res.error);
       else {
-        message.success("Преподаватель обновлён");
+        message.success("Teacher updated");
         onClose();
       }
     } else {
@@ -82,7 +82,7 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
       });
       if (res.error) message.error(res.error);
       else {
-        message.success("Преподаватель создан");
+        message.success("Teacher created");
         onClose();
       }
     }
@@ -93,29 +93,29 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
   return (
     <Modal
         forceRender={mounted}
-      title={isEditing ? "Редактировать преподавателя" : "Новый преподаватель"}
+      title={isEditing ? "Edit teacher" : "New teacher"}
       open={open}
       onOk={handleSubmit}
       onCancel={onClose}
       confirmLoading={loading}
-      okText={isEditing ? "Сохранить" : "Создать"}
-      cancelText="Отмена"
+      okText={isEditing ? "Save" : "Create"}
+      cancelText="Cancel"
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item
           name="fullName"
-          label="ФИО"
-          rules={[{ required: true, message: "Введите ФИО" }]}
+          label="Full Name"
+          rules={[{ required: true, message: "Enter full name" }]}
         >
-          <Input placeholder="Иванов Иван Иванович" />
+          <Input placeholder="John Smith" />
         </Form.Item>
 
         <Form.Item
           name="email"
           label="Email"
           rules={[
-            { required: true, message: "Введите email" },
-            { type: "email", message: "Некорректный email" },
+            { required: true, message: "Enter email" },
+            { type: "email", message: "Invalid email" },
           ]}
         >
           <Input placeholder="teacher@university.kz" />
@@ -124,17 +124,17 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
         {!isEditing && (
           <Form.Item
             name="password"
-            label="Пароль"
+            label="Password"
             rules={[
-              { required: true, message: "Введите пароль" },
-              { min: 6, message: "Минимум 6 символов" },
+              { required: true, message: "Enter password" },
+              { min: 6, message: "Minimum 6 characters" },
             ]}
           >
-            <Input.Password placeholder="Пароль" />
+            <Input.Password placeholder="Password" />
           </Form.Item>
         )}
 
-        <Form.Item label="Диплом (PDF / изображение)">
+        <Form.Item label="Diploma (PDF / image)">
           <Upload
             accept=".pdf,.jpg,.jpeg,.png"
             maxCount={1}
@@ -142,12 +142,12 @@ export default function TeacherFormModal({ open, teacher, onClose }: Props) {
             showUploadList={false}
           >
             <Button icon={<UploadOutlined />}>
-              {diplomaPath ? "Заменить файл" : "Загрузить файл"}
+              {diplomaPath ? "Replace file" : "Upload file"}
             </Button>
           </Upload>
           {diplomaPath && (
             <span style={{ marginLeft: 8, color: "#52c41a", fontSize: 13 }}>
-              Файл загружен
+              File uploaded
             </span>
           )}
         </Form.Item>

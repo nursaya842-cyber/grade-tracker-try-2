@@ -9,7 +9,7 @@ async function getParentContext() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Не авторизован");
+  if (!user) throw new Error("Not authorized");
   return { supabase, authUser: user };
 }
 
@@ -174,13 +174,13 @@ export async function changeParentPassword(
 ) {
   const { supabase, authUser } = await getParentContext();
   const email = authUser.email;
-  if (!email) return { error: "Email не найден" };
+  if (!email) return { error: "Email not found" };
 
   const { error: signInErr } = await supabase.auth.signInWithPassword({
     email,
     password: currentPassword,
   });
-  if (signInErr) return { error: "Неверный текущий пароль" };
+  if (signInErr) return { error: "Incorrect current password" };
 
   const { error: updateErr } = await supabase.auth.updateUser({
     password: newPassword,

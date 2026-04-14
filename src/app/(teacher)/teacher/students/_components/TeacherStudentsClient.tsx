@@ -53,7 +53,7 @@ export default function TeacherStudentsClient({ students, total, page, pageSize,
 
   const columns: ColumnsType<Student> = [
     {
-      title: "Студент",
+      title: "Student",
       key: "student",
       render: (_, record) => (
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -66,11 +66,11 @@ export default function TeacherStudentsClient({ students, total, page, pageSize,
       ),
     },
     {
-      title: "Курс",
+      title: "Year",
       dataIndex: "course_year",
       key: "course_year",
       width: 90,
-      render: (v: number | null) => v ? <Tag>{v} курс</Tag> : <Tag>—</Tag>,
+      render: (v: number | null) => v ? <Tag>Year {v}</Tag> : <Tag>—</Tag>,
     },
     {
       title: "",
@@ -82,7 +82,7 @@ export default function TeacherStudentsClient({ students, total, page, pageSize,
           icon={<EyeOutlined />}
           onClick={(e) => { e.stopPropagation(); openDrawer(record.id, record.full_name); }}
         >
-          Профиль студента
+          Student Profile
         </Button>
       ),
     },
@@ -92,11 +92,11 @@ export default function TeacherStudentsClient({ students, total, page, pageSize,
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Мои студенты
+          My Students
         </Typography.Title>
         <Input
           prefix={<SearchOutlined />}
-          placeholder="Поиск по имени или email"
+          placeholder="Search by name or email"
           style={{ width: 300 }}
           value={searchValue}
           onChange={(e) => handleSearch(e.target.value)}
@@ -115,7 +115,7 @@ export default function TeacherStudentsClient({ students, total, page, pageSize,
           pageSize,
           total,
           showSizeChanger: false,
-          showTotal: (t) => `Всего: ${t} студентов`,
+          showTotal: (t) => `Total: ${t} students`,
           onChange: (p) => navigate({ page: p }),
         }}
         onRow={(record) => ({

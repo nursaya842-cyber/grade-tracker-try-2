@@ -5,6 +5,7 @@ import StudentProfileClient from "./_components/StudentProfileClient";
 import { calculateGpa } from "@/lib/utils";
 import { calculateEngagement } from "@/lib/engagement";
 import { fetchCheckinAverage } from "../_actions/checkin-actions";
+import { triggerStudentRecommendations } from "@/components/recommendations/recommendation-actions";
 
 export default async function StudentProfilePage() {
   const supabase = await createClient();
@@ -23,6 +24,9 @@ export default async function StudentProfilePage() {
     .single();
 
   if (!profile) redirect("/login");
+
+  // Trigger recommendation generation in background (non-blocking)
+  void triggerStudentRecommendations(effectiveId);
 
   // Average grade
   const { data: gradeData } = await supabase

@@ -120,7 +120,7 @@ export default function ScheduleClient() {
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Запись отменена");
+      message.success("Registration cancelled");
       setSelectedEvent(null);
       refetch();
     }
@@ -145,14 +145,14 @@ export default function ScheduleClient() {
         }}
       >
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Моё расписание
+          My Schedule
         </Typography.Title>
         <Segmented
           value={view}
           onChange={(v) => setView(v as View)}
           options={[
-            { label: "Неделя", value: "week" },
-            { label: "Месяц", value: "month" },
+            { label: "Week", value: "week" },
+            { label: "Month", value: "month" },
           ]}
         />
       </div>
@@ -175,32 +175,32 @@ export default function ScheduleClient() {
           eventPropGetter={eventStyleGetter}
           onSelectEvent={handleSelectEvent}
           messages={{
-            today: "Сегодня",
-            previous: "Назад",
-            next: "Далее",
-            week: "Неделя",
-            month: "Месяц",
-            day: "День",
-            noEventsInRange: "Нет событий",
+            today: "Today",
+            previous: "Back",
+            next: "Next",
+            week: "Week",
+            month: "Month",
+            day: "Day",
+            noEventsInRange: "No events",
           }}
           step={30}
           timeslots={2}
           min={new Date(0, 0, 0, 7, 0)}
           max={new Date(0, 0, 0, 22, 0)}
-          culture="ru"
+          culture="en"
         />
       </div>
 
       {/* Lesson detail modal */}
       <Modal
-        title={selectedEvent?.type === "lesson" ? "Урок" : "Мероприятие"}
+        title={selectedEvent?.type === "lesson" ? "Lesson" : "Event"}
         open={!!selectedEvent}
         onCancel={closeModal}
         footer={
           selectedEvent?.type === "event"
             ? [
                 <Button key="close" onClick={closeModal}>
-                  Закрыть
+                  Close
                 </Button>,
                 <Button
                   key="cancel"
@@ -208,7 +208,7 @@ export default function ScheduleClient() {
                   loading={cancelling}
                   onClick={handleCancelSignup}
                 >
-                  Отменить запись
+                  Cancel Registration
                 </Button>,
               ]
             : null
@@ -221,68 +221,68 @@ export default function ScheduleClient() {
             </div>
           ) : lessonDetail?.lesson ? (
             <Descriptions column={1} size="small" bordered>
-              <Descriptions.Item label="Предмет">
+              <Descriptions.Item label="Subject">
                 {(lessonDetail.lesson.subjects as unknown as { name: string })
                   ?.name ?? "—"}
               </Descriptions.Item>
-              <Descriptions.Item label="Преподаватель">
+              <Descriptions.Item label="Teacher">
                 {(
                   lessonDetail.lesson.teacher as unknown as {
                     full_name: string;
                   }
                 )?.full_name ?? "—"}
               </Descriptions.Item>
-              <Descriptions.Item label="Время">
+              <Descriptions.Item label="Time">
                 {formatDT(selectedEvent.start)} — {format(selectedEvent.end, "HH:mm")}
               </Descriptions.Item>
               {lessonDetail.lesson.report_submitted_at ? (
                 <>
-                  <Descriptions.Item label="Посещаемость">
+                  <Descriptions.Item label="Attendance">
                     {lessonDetail.attendance?.status === "present" ? (
-                      <Tag color="green">Присутствует</Tag>
+                      <Tag color="green">Present</Tag>
                     ) : lessonDetail.attendance?.status === "absent" ? (
-                      <Tag color="red">Отсутствует</Tag>
+                      <Tag color="red">Absent</Tag>
                     ) : (
-                      <Tag>Не отмечен</Tag>
+                      <Tag>Not marked</Tag>
                     )}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Оценка">
+                  <Descriptions.Item label="Grade">
                     {lessonDetail.grade?.score !== null &&
                     lessonDetail.grade?.score !== undefined ? (
                       <Typography.Text strong>
                         {lessonDetail.grade.score}
                       </Typography.Text>
                     ) : (
-                      <Typography.Text type="secondary">Н/Д</Typography.Text>
+                      <Typography.Text type="secondary">N/A</Typography.Text>
                     )}
                   </Descriptions.Item>
                 </>
               ) : (
-                <Descriptions.Item label="Статус">
-                  <Tag color="blue">Отчёт ещё не сдан</Tag>
+                <Descriptions.Item label="Status">
+                  <Tag color="blue">Report not submitted yet</Tag>
                 </Descriptions.Item>
               )}
             </Descriptions>
           ) : (
             <Typography.Text type="secondary">
-              Данные урока не найдены
+              Lesson data not found
             </Typography.Text>
           )
         )}
 
         {selectedEvent?.type === "event" && (
           <Descriptions column={1} size="small" bordered>
-            <Descriptions.Item label="Клуб">
+            <Descriptions.Item label="Club">
               {String(selectedEvent.meta.clubName ?? "—")}
             </Descriptions.Item>
-            <Descriptions.Item label="Название">
+            <Descriptions.Item label="Title">
               {selectedEvent.title}
             </Descriptions.Item>
-            <Descriptions.Item label="Время">
+            <Descriptions.Item label="Time">
               {formatDT(selectedEvent.start)} — {format(selectedEvent.end, "HH:mm")}
             </Descriptions.Item>
             {selectedEvent.meta.venue ? (
-              <Descriptions.Item label="Место">
+              <Descriptions.Item label="Venue">
                 {String(selectedEvent.meta.venue)}
               </Descriptions.Item>
             ) : null}

@@ -75,7 +75,7 @@ export async function checkConflicts(
     const { data: teacherConflicts } = await query;
     if (teacherConflicts && teacherConflicts.length > 0) {
       conflicts.push(
-        `Преподаватель занят: ${format(parseISO(ld.startsAt), "dd.MM HH:mm")}–${format(parseISO(ld.endsAt), "HH:mm")}`
+        `Teacher is busy: ${format(parseISO(ld.startsAt), "dd.MM HH:mm")}–${format(parseISO(ld.endsAt), "HH:mm")}`
       );
       if (conflicts.length >= 5) return conflicts; // limit
     }
@@ -92,7 +92,7 @@ export async function checkConflicts(
 
       if (studentConflicts && studentConflicts.length > 0) {
         conflicts.push(
-          `Конфликт у студентов: ${format(parseISO(ld.startsAt), "dd.MM HH:mm")}–${format(parseISO(ld.endsAt), "HH:mm")} (${studentConflicts.length} студ.)`
+          `Student conflict: ${format(parseISO(ld.startsAt), "dd.MM HH:mm")}–${format(parseISO(ld.endsAt), "HH:mm")} (${studentConflicts.length} students)`
         );
         if (conflicts.length >= 5) return conflicts;
       }
@@ -106,7 +106,7 @@ export async function createLessonSeries(input: CreateSeriesInput) {
   const supabase = await createClient();
 
   const dates = generateLessonDates(input.recurrenceRule, input.startDate, input.endDate);
-  if (dates.length === 0) return { error: "Нет уроков для заданного диапазона" };
+  if (dates.length === 0) return { error: "No lessons in date range" };
 
   // Check conflicts
   const lessonDates = dates.map((d) => ({

@@ -24,9 +24,9 @@ export interface Recommendation {
 }
 
 const CATEGORY_CONFIG: Record<string, { color: string; label: string }> = {
-  academic: { color: "blue", label: "Академическое" },
-  social: { color: "green", label: "Социальное" },
-  admin: { color: "orange", label: "Административное" },
+  academic: { color: "blue", label: "Academic" },
+  social: { color: "green", label: "Social" },
+  admin: { color: "orange", label: "Administrative" },
 };
 
 function getPriorityConfig(score: number): {
@@ -39,7 +39,7 @@ function getPriorityConfig(score: number): {
     return {
       color: "#f5222d",
       icon: <ExclamationCircleFilled style={{ color: "#f5222d", fontSize: 18 }} />,
-      label: "Высокий приоритет",
+      label: "High Priority",
       tagColor: "red",
     };
   }
@@ -47,14 +47,14 @@ function getPriorityConfig(score: number): {
     return {
       color: "#faad14",
       icon: <WarningFilled style={{ color: "#faad14", fontSize: 18 }} />,
-      label: "Средний приоритет",
+      label: "Medium Priority",
       tagColor: "orange",
     };
   }
   return {
     color: "#52c41a",
     icon: <CheckCircleFilled style={{ color: "#52c41a", fontSize: 18 }} />,
-    label: "Низкий приоритет",
+    label: "Low Priority",
     tagColor: "green",
   };
 }
@@ -110,7 +110,7 @@ export default function RecommendationCard({ rec }: { rec: Recommendation }) {
           loading={loading}
           style={{ flexShrink: 0 }}
         >
-          Принять
+          Accept
         </Button>
       </div>
 
@@ -123,7 +123,7 @@ export default function RecommendationCard({ rec }: { rec: Recommendation }) {
       {/* Action */}
       {rec.action && (
         <div style={{ marginTop: 6, fontSize: 13 }}>
-          <Typography.Text type="secondary">Действие: </Typography.Text>
+          <Typography.Text type="secondary">Action: </Typography.Text>
           <Typography.Text>{rec.action}</Typography.Text>
         </div>
       )}
@@ -132,14 +132,14 @@ export default function RecommendationCard({ rec }: { rec: Recommendation }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, flexWrap: "wrap", gap: 4 }}>
         {rec.expected_effect && (
           <Typography.Text style={{ fontSize: 12, color: "#52c41a" }}>
-            Ожидаемый эффект: {rec.expected_effect}
+            Expected Effect: {rec.expected_effect}
           </Typography.Text>
         )}
         {rec.deadline && (
           <Space size={4}>
             <ClockCircleOutlined style={{ color: "#8c8c8c", fontSize: 12 }} />
             <Typography.Text style={{ fontSize: 12, color: "#8c8c8c" }}>
-              Срок: {new Date(rec.deadline).toLocaleDateString("ru-RU")}
+              Deadline: {new Date(rec.deadline).toLocaleDateString("en-US")}
             </Typography.Text>
           </Space>
         )}

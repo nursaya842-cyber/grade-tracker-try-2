@@ -33,7 +33,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
 
   const gradeColumns: Array<Record<string, unknown>> = [
     {
-      title: "Предмет",
+      title: "Subject",
       key: "subject",
       render: (_: unknown, record: Record<string, unknown>) => {
         const lessons = record.lessons as unknown as { subjects: { name: string } } | { subjects: { name: string } }[];
@@ -42,14 +42,14 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
       },
     },
     {
-      title: "Балл",
+      title: "Score",
       dataIndex: "score",
       key: "score",
       width: 80,
-      render: (v: unknown) => (v as number) ?? "Н/Д",
+      render: (v: unknown) => (v as number) ?? "N/A",
     },
     {
-      title: "Буква",
+      title: "Letter",
       key: "letter",
       width: 70,
       render: (_: unknown, record: Record<string, unknown>) => {
@@ -62,7 +62,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
       },
     },
     {
-      title: "Дата",
+      title: "Date",
       dataIndex: "graded_at",
       key: "graded_at",
       render: (v: string) => formatDateTime(v),
@@ -72,7 +72,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
 
   const attendanceColumns: Array<Record<string, unknown>> = [
     {
-      title: "Предмет",
+      title: "Subject",
       key: "subject",
       render: (_: unknown, record: Record<string, unknown>) => {
         const lessons = record.lessons as unknown as { subjects: { name: string } } | { subjects: { name: string } }[];
@@ -81,18 +81,18 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
       },
     },
     {
-      title: "Статус",
+      title: "Status",
       dataIndex: "status",
       key: "status",
       width: 120,
       render: (v: string) => (
         <Tag color={v === "present" ? "green" : "red"}>
-          {v === "present" ? "Присутствовал" : "Отсутствовал"}
+          {v === "present" ? "Present" : "Absent"}
         </Tag>
       ),
     },
     {
-      title: "Дата",
+      title: "Date",
       dataIndex: "marked_at",
       key: "marked_at",
       render: (v: string) => formatDateTime(v),
@@ -108,7 +108,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
         onClick={() => router.push("/parent/children")}
         style={{ marginBottom: 16 }}
       >
-        Назад к списку
+        Back to list
       </Button>
 
       {/* Header */}
@@ -127,7 +127,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
             <Typography.Text type="secondary">{profile.email}</Typography.Text>
             <br />
             <Typography.Text type="secondary">
-              {profile.course_year ? `${profile.course_year} курс` : ""}
+              {profile.course_year ? `Year ${profile.course_year}` : ""}
             </Typography.Text>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
         <Col xs={24} sm={8}>
           <Card>
             <Statistic
-              title="Средний балл"
+              title="Average Score"
               value={data.avgGrade}
               precision={1}
               suffix="/ 100"
@@ -169,7 +169,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
         <Col xs={24} sm={8}>
           <Card>
             <Statistic
-              title="Посещаемость"
+              title="Attendance"
               value={data.attendancePct}
               suffix="%"
               prefix={<CheckCircleOutlined />}
@@ -186,7 +186,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
       {/* Clubs */}
       {data.clubs.length > 0 && (
         <Card
-          title={<><TeamOutlined /> Клубы</>}
+          title={<><TeamOutlined /> Clubs</>}
           style={{ marginBottom: 24 }}
           styles={{ body: { padding: "12px 24px" } }}
         >
@@ -200,7 +200,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
 
       {/* Recent Grades */}
       <Card
-        title="Последние оценки"
+        title="Recent Grades"
         style={{ marginBottom: 24 }}
         styles={{ body: { padding: 0 } }}
       >
@@ -215,7 +215,7 @@ export default function ChildDetailClient({ data }: { data: ChildData }) {
 
       {/* Recent Attendance */}
       <Card
-        title={<><CalendarOutlined /> Последняя посещаемость</>}
+        title={<><CalendarOutlined /> Recent Attendance</>}
         styles={{ body: { padding: 0 } }}
       >
         <Table

@@ -24,10 +24,10 @@ export default function AnnouncementFormModal({ clubId, onClose }: Props) {
     const supabase = createClient();
     const path = `${crypto.randomUUID()}.${file.name.split(".").pop()}`;
     const { error } = await supabase.storage.from("club-photos").upload(path, file);
-    if (error) { message.error("Ошибка загрузки"); return false; }
+    if (error) { message.error("Upload failed"); return false; }
     const { data } = supabase.storage.from("club-photos").getPublicUrl(path);
     setPhotoUrl(data.publicUrl);
-    message.success("Фото загружено");
+    message.success("Photo uploaded");
     return false;
   };
 
@@ -55,7 +55,7 @@ export default function AnnouncementFormModal({ clubId, onClose }: Props) {
     setLoading(false);
     if (res.error) message.error(res.error);
     else {
-      message.success("Объявление создано");
+      message.success("Announcement created");
       form.resetFields();
       setPhotoUrl(null);
       onClose();
@@ -65,40 +65,40 @@ export default function AnnouncementFormModal({ clubId, onClose }: Props) {
   return (
     <Modal
         forceRender={mounted}
-      title="Новое объявление"
+      title="New Announcement"
       open={!!clubId}
       onOk={handleSubmit}
       onCancel={() => { form.resetFields(); setPhotoUrl(null); onClose(); }}
       confirmLoading={loading}
-      okText="Создать"
-      cancelText="Отмена"
+      okText="Create"
+      cancelText="Cancel"
     >
       <Form form={form} layout="vertical" requiredMark={false}>
-        <Form.Item name="title" label="Название" rules={[{ required: true, message: "Введите название" }]}>
-          <Input placeholder="Турнир по шахматам" />
+        <Form.Item name="title" label="Title" rules={[{ required: true, message: "Enter title" }]}>
+          <Input placeholder="Chess Tournament" />
         </Form.Item>
-        <Form.Item name="description" label="Описание">
-          <Input.TextArea rows={3} placeholder="Описание мероприятия..." />
+        <Form.Item name="description" label="Description">
+          <Input.TextArea rows={3} placeholder="Event description..." />
         </Form.Item>
-        <Form.Item name="date" label="Дата" rules={[{ required: true, message: "Укажите дату" }]}>
+        <Form.Item name="date" label="Date" rules={[{ required: true, message: "Select date" }]}>
           <DatePicker style={{ width: "100%" }} format="DD.MM.YYYY" />
         </Form.Item>
-        <Form.Item name="timeRange" label="Время" rules={[{ required: true, message: "Укажите время" }]}>
+        <Form.Item name="timeRange" label="Time" rules={[{ required: true, message: "Select time" }]}>
           <TimePicker.RangePicker format="HH:mm" minuteStep={30} style={{ width: "100%" }} />
         </Form.Item>
-        <Form.Item name="venue" label="Место">
-          <Input placeholder="Аудитория 305" />
+        <Form.Item name="venue" label="Venue">
+          <Input placeholder="Room 305" />
         </Form.Item>
-        <Form.Item label="Фото">
+        <Form.Item label="Photo">
           <Upload
             accept=".jpg,.jpeg,.png"
             maxCount={1}
             beforeUpload={(file) => handlePhotoUpload(file as unknown as File)}
             showUploadList={false}
           >
-            <Button icon={<UploadOutlined />}>{photoUrl ? "Заменить" : "Загрузить"}</Button>
+            <Button icon={<UploadOutlined />}>{photoUrl ? "Replace" : "Upload"}</Button>
           </Upload>
-          {photoUrl && <span style={{ marginLeft: 8, color: "#52c41a", fontSize: 13 }}>Загружено</span>}
+          {photoUrl && <span style={{ marginLeft: 8, color: "#52c41a", fontSize: 13 }}>Uploaded</span>}
         </Form.Item>
       </Form>
     </Modal>

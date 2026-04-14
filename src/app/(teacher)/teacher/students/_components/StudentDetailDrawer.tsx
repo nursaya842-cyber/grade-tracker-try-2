@@ -35,6 +35,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fetchStudentFullProfile } from "../../_actions/teacher-actions";
+import { triggerStudentRecommendations } from "@/components/recommendations/recommendation-actions";
 import type { ColumnsType } from "antd/es/table";
 
 type FullProfile = Awaited<ReturnType<typeof fetchStudentFullProfile>>;
@@ -46,10 +47,10 @@ interface Props {
 }
 
 function getRiskConfig(segment: string): { label: string; color: string } {
-  if (segment === "at-risk") return { label: "Высокий риск", color: "red" };
-  if (segment === "declining") return { label: "Средний риск", color: "orange" };
-  if (segment === "stable") return { label: "Стабильный", color: "blue" };
-  return { label: "Низкий риск", color: "green" };
+  if (segment === "at-risk") return { label: "High Risk", color: "red" };
+  if (segment === "declining") return { label: "Medium Risk", color: "orange" };
+  if (segment === "stable") return { label: "Stable", color: "blue" };
+  return { label: "Low Risk", color: "green" };
 }
 
 function getPriorityIcon(score: number) {
@@ -108,6 +109,7 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
       setProfile(data);
       setLoading(false);
     });
+    triggerStudentRecommendations(studentId);
   }, [studentId]);
 
   const p = profile;
@@ -115,11 +117,11 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
   const { data: chartData, subjects: chartSubjects } = p ? buildChartData(p.subjectGrades) : { data: [], subjects: [] };
 
   const attColumns: ColumnsType<NonNullable<FullProfile>["subjectAttendance"][number]> = [
-    { title: "Предмет", dataIndex: "name", key: "name" },
-    { title: "Всего", dataIndex: "total", key: "total", width: 70 },
-    { title: "Присутствовал", dataIndex: "present", key: "present", width: 120 },
+    { title: "Subject", dataIndex: "name", key: "name" },
+    { title: "Total", dataIndex: "total", key: "total", width: 70 },
+    { title: "Present", dataIndex: "present", key: "present", width: 120 },
     {
-      title: "Посещаемость",
+      title: "Attendance",
       dataIndex: "pct",
       key: "pct",
       width: 160,
@@ -130,30 +132,30 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
   ];
 
   const checkinColumns: ColumnsType<NonNullable<FullProfile>["checkins"][number]> = [
-    { title: "Неделя", dataIndex: "week_start", key: "week_start", width: 110 },
+    { title: "Week", dataIndex: "week_start", key: "week_start", width: 110 },
     {
-      title: "Стресс",
+      title: "Stress",
       dataIndex: "stress_level",
       key: "stress_level",
       width: 80,
       render: (v: number) => <Tag color={v >= 7 ? "red" : v >= 5 ? "orange" : "green"}>{v}/10</Tag>,
     },
     {
-      title: "Мотивация",
+      title: "Motivation",
       dataIndex: "motivation_level",
       key: "motivation_level",
       width: 90,
       render: (v: number) => <Tag color={v >= 7 ? "green" : v >= 4 ? "orange" : "red"}>{v}/10</Tag>,
     },
     {
-      title: "Понимание",
+      title: "Understanding",
       dataIndex: "understanding",
       key: "understanding",
       width: 100,
       render: (v: number) => <Tag color={v >= 7 ? "green" : v >= 4 ? "orange" : "red"}>{v}/10</Tag>,
     },
     {
-      title: "AI-резюме заметки",
+      title: "AI Summary Notes",
       dataIndex: "ai_summary",
       key: "ai_summary",
       render: (v: string | null) =>
@@ -187,9 +189,9 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
           <Row gutter={[12, 12]} style={{ marginBottom: 20 }}>
             {[
               { label: "GPA", value: p.stats.gpa.toFixed(2), suffix: "/ 4.0", pct: Math.round(p.stats.gpa / 4 * 100), lo: 50, hi: 75 },
-              { label: "Средний балл", value: p.stats.avgGrade.toFixed(1), suffix: "/ 100", pct: p.stats.avgGrade, lo: 50, hi: 70 },
-              { label: "Посещаемость", value: `${p.stats.attendancePct}%`, suffix: "", pct: p.stats.attendancePct, lo: 60, hi: 80 },
-              { label: "Вовлечённость", value: `${p.stats.engagement.score}%`, suffix: "", pct: p.stats.engagement.score, lo: 40, hi: 70, customColor: p.stats.engagement.color },
+              { label: "Avg Score", value: p.stats.avgGrade.toFixed(1), suffix: "/ 100", pct: p.stats.avgGrade, lo: 50, hi: 70 },
+              { label: "Attendance", value: `${p.stats.attendancePct}%`, suffix: "", pct: p.stats.attendancePct, lo: 60, hi: 80 },
+              { label: "Engagement", value: `${p.stats.engagement.score}%`, suffix: "", pct: p.stats.engagement.score, lo: 40, hi: 70, customColor: p.stats.engagement.color },
               { label: "Health Score", value: String(p.stats.academicHealth), suffix: "/ 100", pct: p.stats.academicHealth, lo: 50, hi: 75 },
             ].map((s) => (
               <Col span={Math.floor(24 / 5)} key={s.label}>
@@ -217,11 +219,11 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
             items={[
               {
                 key: "recs",
-                label: `Рекомендации (${p.recommendations.length})`,
+                label: `Recommendations (${p.recommendations.length})`,
                 children: (
                   <div>
                     {p.recommendations.length === 0 ? (
-                      <Empty description="Нет активных рекомендаций" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                      <Empty description="No active recommendations" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                     ) : (
                       p.recommendations.map((rec) => (
                         <Card
@@ -234,23 +236,23 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
                             {getPriorityIcon(rec.priority_score)}
                             <Typography.Text strong>{rec.title ?? rec.next_action.slice(0, 40)}</Typography.Text>
                             <Tag color={rec.category === "academic" ? "blue" : rec.category === "social" ? "green" : "orange"} style={{ margin: 0 }}>
-                              {rec.category === "academic" ? "Академическое" : rec.category === "social" ? "Социальное" : "Административное"}
+                              {rec.category === "academic" ? "Academic" : rec.category === "social" ? "Social" : "Administrative"}
                             </Tag>
                           </Space>
                           <div style={{ fontSize: 13, color: "#595959", marginTop: 6 }}>{rec.next_action}</div>
                           {rec.action && (
                             <div style={{ marginTop: 4, fontSize: 12 }}>
-                              <Typography.Text type="secondary">Действие: </Typography.Text>
+                              <Typography.Text type="secondary">Action: </Typography.Text>
                               <Typography.Text>{rec.action}</Typography.Text>
                             </div>
                           )}
                           {rec.expected_effect && (
                             <div style={{ marginTop: 2, fontSize: 12, color: "#52c41a" }}>
-                              <ThunderboltOutlined /> Ожидаемый эффект: {rec.expected_effect}
+                              <ThunderboltOutlined /> Expected effect: {rec.expected_effect}
                             </div>
                           )}
                           {rec.deadline && (
-                            <Typography.Text type="secondary" style={{ fontSize: 11 }}>Срок: {new Date(rec.deadline).toLocaleDateString("ru-RU")}</Typography.Text>
+                            <Typography.Text type="secondary" style={{ fontSize: 11 }}>Deadline: {new Date(rec.deadline).toLocaleDateString("en-US")}</Typography.Text>
                           )}
                         </Card>
                       ))
@@ -260,9 +262,9 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
               },
               {
                 key: "grades",
-                label: "Динамика оценок",
+                label: "Grade Trends",
                 children: chartData.length === 0 ? (
-                  <Empty description="Нет данных об оценках" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  <Empty description="No grade data available" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -288,9 +290,9 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
               },
               {
                 key: "attendance",
-                label: "Посещаемость",
+                label: "Attendance",
                 children: p.subjectAttendance.length === 0 ? (
-                  <Empty description="Нет данных о посещаемости" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  <Empty description="No attendance data available" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 ) : (
                   <Table
                     dataSource={p.subjectAttendance}
@@ -303,19 +305,19 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
               },
               {
                 key: "checkin",
-                label: `Самочувствие (${p.checkins.length})`,
+                label: `Wellbeing (${p.checkins.length})`,
                 children: (
                   <div>
                     {p.checkinAvg !== null && (
                       <Alert
                         type={p.checkinAvg >= 7 ? "success" : p.checkinAvg >= 5 ? "warning" : "error"}
-                        title={`Средний wellbeing-индекс за последние 4 недели: ${p.checkinAvg}/10`}
+                        title={`Average wellbeing index over the last 4 weeks: ${p.checkinAvg}/10`}
                         style={{ marginBottom: 12 }}
                         showIcon
                       />
                     )}
                     {p.checkins.length === 0 ? (
-                      <Empty description="Студент ещё не заполнял check-in" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                      <Empty description="Student has not filled in a check-in yet" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                     ) : (
                       <Table
                         dataSource={p.checkins}
@@ -334,7 +336,7 @@ export default function StudentDetailDrawer({ studentId, studentName, onClose }:
       )}
 
       {!loading && !p && studentId && (
-        <Empty description="Не удалось загрузить данные студента" />
+        <Empty description="Failed to load student data" />
       )}
     </Drawer>
   );

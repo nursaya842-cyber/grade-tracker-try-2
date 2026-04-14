@@ -24,10 +24,10 @@ export default function ChildrenList({ children }: { children: Child[] }) {
   if (children.length === 0) {
     return (
       <div>
-        <Typography.Title level={4}>Мои дети</Typography.Title>
+        <Typography.Title level={4}>My Children</Typography.Title>
         <Card>
           <Typography.Text type="secondary">
-            Нет привязанных студентов. Обратитесь к администратору.
+            No linked students. Please contact the administrator.
           </Typography.Text>
         </Card>
       </div>
@@ -37,7 +37,7 @@ export default function ChildrenList({ children }: { children: Child[] }) {
   return (
     <div>
       <Typography.Title level={4} style={{ marginBottom: 24 }}>
-        Мои дети
+        My Children
       </Typography.Title>
 
       <Row gutter={[16, 16]}>
@@ -63,7 +63,7 @@ export default function ChildrenList({ children }: { children: Child[] }) {
                   </Typography.Text>
                   <br />
                   <Typography.Text type="secondary" style={{ fontSize: 13 }}>
-                    {child.course_year ? `${child.course_year} курс` : ""}
+                    {child.course_year ? `Year ${child.course_year}` : ""}
                   </Typography.Text>
                 </div>
               </div>
@@ -86,7 +86,7 @@ export default function ChildrenList({ children }: { children: Child[] }) {
                 </Col>
                 <Col span={12}>
                   <Statistic
-                    title="Посещаемость"
+                    title="Attendance"
                     value={child.attendancePct}
                     suffix="%"
                     prefix={<CheckCircleOutlined />}
@@ -105,7 +105,7 @@ export default function ChildrenList({ children }: { children: Child[] }) {
                 style={{ padding: 0, marginTop: 12 }}
                 icon={<ArrowRightOutlined />}
               >
-                Подробнее
+                View Details
               </Button>
             </Card>
           </Col>

@@ -72,7 +72,7 @@ export default function LessonsCalendar() {
     const sub = l.subjects as unknown as { name: string } | null;
     return {
       id: l.id,
-      title: sub?.name ?? "Предмет",
+      title: sub?.name ?? "Subject",
       start: new Date(l.starts_at),
       end: new Date(l.ends_at),
       subjectId: l.subject_id,
@@ -107,14 +107,14 @@ export default function LessonsCalendar() {
         }}
       >
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Мои уроки
+          My Lessons
         </Typography.Title>
         <Segmented
           value={view}
           onChange={(v) => setView(v as View)}
           options={[
-            { label: "Неделя", value: "week" },
-            { label: "Месяц", value: "month" },
+            { label: "Week", value: "week" },
+            { label: "Month", value: "month" },
           ]}
         />
       </div>
@@ -137,19 +137,19 @@ export default function LessonsCalendar() {
           eventPropGetter={eventStyleGetter}
           onSelectEvent={(event) => router.push(`/teacher/lessons/${event.id}`)}
           messages={{
-            today: "Сегодня",
-            previous: "Назад",
-            next: "Далее",
-            week: "Неделя",
-            month: "Месяц",
-            day: "День",
-            noEventsInRange: "Нет уроков",
+            today: "Today",
+            previous: "Back",
+            next: "Next",
+            week: "Week",
+            month: "Month",
+            day: "Day",
+            noEventsInRange: "No lessons",
           }}
           step={30}
           timeslots={2}
           min={new Date(0, 0, 0, 7, 0)}
           max={new Date(0, 0, 0, 22, 0)}
-          culture="ru"
+          culture="en"
         />
       </div>
     </div>

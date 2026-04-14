@@ -95,7 +95,7 @@ export default function StudentsTable({
   const handleDelete = async (id: string) => {
     const res = await deleteStudent(id);
     if (res.error) message.error(res.error);
-    else { message.success("Студент удалён"); navigate({ page: 1 }); }
+    else { message.success("Student deleted"); navigate({ page: 1 }); }
   };
 
   const handleResetPassword = async () => {
@@ -104,7 +104,7 @@ export default function StudentsTable({
     const res = await resetPassword(resetUserId, values.newPassword);
     if (res.error) message.error(res.error);
     else {
-      message.success("Пароль сброшен");
+      message.success("Password reset");
       setResetOpen(false);
       resetForm.resetFields();
     }
@@ -112,13 +112,13 @@ export default function StudentsTable({
 
   const columns: ColumnsType<Student> = [
     {
-      title: "Фото",
+      title: "Photo",
       key: "avatar",
       width: 60,
       render: () => <Avatar icon={<UserOutlined />} style={{ background: "#722ed1" }} />,
     },
     {
-      title: "Имя",
+      title: "Name",
       dataIndex: "full_name",
       key: "full_name",
     },
@@ -128,14 +128,14 @@ export default function StudentsTable({
       key: "email",
     },
     {
-      title: "Курс",
+      title: "Year",
       dataIndex: "course_year",
       key: "course_year",
       width: 80,
       render: (v: number | null) => v ?? "—",
     },
     {
-      title: "Факультет",
+      title: "Faculty",
       dataIndex: "faculty_name",
       key: "faculty_name",
       render: (v: string | null) => v ?? <span style={{ color: "#999" }}>—</span>,
@@ -153,24 +153,24 @@ export default function StudentsTable({
       ),
     },
     {
-      title: "Дата создания",
+      title: "Created At",
       dataIndex: "created_at",
       key: "created_at",
       render: (v: string) => formatDateTime(v),
       responsive: ["lg"],
     },
     {
-      title: "Действия",
+      title: "Actions",
       key: "actions",
       width: 240,
       render: (_, record) => (
         <Space size="small">
-          <Button type="text" size="small" icon={<LoginOutlined />} title="Войти как" onClick={() => startImpersonation(record.id)} />
-          <Button type="text" size="small" icon={<LineChartOutlined />} title="Оценки" onClick={() => setGradesStudentId(record.id)} />
-          <Button type="text" size="small" icon={<BarChartOutlined />} title="Активность" onClick={() => setSocialStudentId(record.id)} />
+          <Button type="text" size="small" icon={<LoginOutlined />} title="Login as" onClick={() => startImpersonation(record.id)} />
+          <Button type="text" size="small" icon={<LineChartOutlined />} title="Grades" onClick={() => setGradesStudentId(record.id)} />
+          <Button type="text" size="small" icon={<BarChartOutlined />} title="Activity" onClick={() => setSocialStudentId(record.id)} />
           <Button type="text" size="small" icon={<EditOutlined />} onClick={() => { setEditingStudent(record); setFormOpen(true); }} />
           <Button type="text" size="small" icon={<KeyOutlined />} onClick={() => { setResetUserId(record.id); setResetOpen(true); }} />
-          <Popconfirm title="Удалить студента?" onConfirm={() => handleDelete(record.id)} okText="Удалить" cancelText="Отмена">
+          <Popconfirm title="Delete student?" onConfirm={() => handleDelete(record.id)} okText="Delete" cancelText="Cancel">
             <Button type="text" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
         </Space>
@@ -182,17 +182,17 @@ export default function StudentsTable({
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Студенты <span style={{ fontSize: 14, fontWeight: 400, color: "#8c8c8c" }}>({total})</span>
+          Students <span style={{ fontSize: 14, fontWeight: 400, color: "#8c8c8c" }}>({total})</span>
         </Typography.Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingStudent(null); setFormOpen(true); }}>
-          Добавить
+          Add
         </Button>
       </div>
 
       <Space style={{ marginBottom: 16 }} wrap>
         <Input
           prefix={<SearchOutlined />}
-          placeholder="Поиск по имени или email..."
+          placeholder="Search by name or email..."
           allowClear
           value={searchVal}
           style={{ width: 300 }}
@@ -212,15 +212,15 @@ export default function StudentsTable({
           }}
         />
         <Select
-          placeholder="Курс"
+          placeholder="Year"
           allowClear
           value={initialCourse}
           style={{ width: 120 }}
           onChange={(v) => navigate({ course: v ?? null, page: 1 })}
-          options={[1, 2, 3, 4, 5, 6].map((n) => ({ label: `${n} курс`, value: n }))}
+          options={[1, 2, 3, 4, 5, 6].map((n) => ({ label: `Year ${n}`, value: n }))}
         />
         <Select
-          placeholder="Факультет"
+          placeholder="Faculty"
           allowClear
           showSearch
           optionFilterProp="label"
@@ -241,7 +241,7 @@ export default function StudentsTable({
           pageSize,
           total,
           showSizeChanger: false,
-          showTotal: (t, range) => `${range[0]}-${range[1]} из ${t}`,
+          showTotal: (t, range) => `${range[0]}-${range[1]} of ${t}`,
           onChange: (p) => navigate({ page: p }),
         }}
       />
@@ -257,19 +257,19 @@ export default function StudentsTable({
 
       <Modal
         forceRender={mounted}
-        title="Сброс пароля"
+        title="Reset Password"
         open={resetOpen}
         onOk={handleResetPassword}
         onCancel={() => { setResetOpen(false); resetForm.resetFields(); }}
-        okText="Сбросить"
+        okText="Reset"
       >
         <Form form={resetForm} layout="vertical">
           <Form.Item
             name="newPassword"
-            label="Новый пароль"
-            rules={[{ required: true, message: "Введите пароль" }, { min: 6, message: "Минимум 6 символов" }]}
+            label="New Password"
+            rules={[{ required: true, message: "Enter password" }, { min: 6, message: "Minimum 6 characters" }]}
           >
-            <Input.Password placeholder="Новый пароль" />
+            <Input.Password placeholder="New password" />
           </Form.Item>
         </Form>
       </Modal>

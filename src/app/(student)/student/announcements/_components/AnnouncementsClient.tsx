@@ -87,7 +87,7 @@ export default function AnnouncementsClient({
         });
         return next;
       });
-      message.success(newSignedUp ? "Вы записались" : "Запись отменена");
+      message.success(newSignedUp ? "You have signed up" : "Registration cancelled");
     }
   };
 
@@ -123,19 +123,19 @@ export default function AnnouncementsClient({
         }}
       >
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Объявления
+          Announcements
         </Typography.Title>
         <Segmented
           value={mode}
           onChange={(v) => setMode(v as "list" | "calendar")}
           options={[
             {
-              label: "Список",
+              label: "List",
               value: "list",
               icon: <UnorderedListOutlined />,
             },
             {
-              label: "Календарь",
+              label: "Calendar",
               value: "calendar",
               icon: <CalendarOutlined />,
             },
@@ -146,7 +146,7 @@ export default function AnnouncementsClient({
       {mode === "list" ? (
         <div>
           {announcements.length === 0 && (
-            <Typography.Text type="secondary">Нет предстоящих мероприятий</Typography.Text>
+            <Typography.Text type="secondary">No upcoming events</Typography.Text>
           )}
           {announcements.map((a) => {
             const st = getState(a);
@@ -170,7 +170,7 @@ export default function AnnouncementsClient({
                     )}
                     <Space>
                       {a.venue && <Tag icon={<EnvironmentOutlined />}>{a.venue}</Tag>}
-                      <Tag icon={<TeamOutlined />}>{st.signupCount} записалось</Tag>
+                      <Tag icon={<TeamOutlined />}>{st.signupCount} signed up</Tag>
                     </Space>
                   </div>
                   <Button
@@ -179,7 +179,7 @@ export default function AnnouncementsClient({
                     loading={loadingId === a.id}
                     onClick={() => handleToggle(a)}
                   >
-                    {st.isSignedUp ? "Отменить" : "Записаться"}
+                    {st.isSignedUp ? "Cancel" : "Sign up"}
                   </Button>
                 </div>
               </Card>
@@ -201,17 +201,17 @@ export default function AnnouncementsClient({
             defaultView={"month" as View}
             eventPropGetter={eventStyleGetter}
             messages={{
-              today: "Сегодня",
-              previous: "Назад",
-              next: "Далее",
-              week: "Неделя",
-              month: "Месяц",
-              day: "День",
-              noEventsInRange: "Нет мероприятий",
+              today: "Today",
+              previous: "Back",
+              next: "Next",
+              week: "Week",
+              month: "Month",
+              day: "Day",
+              noEventsInRange: "No events",
             }}
             step={30}
             timeslots={2}
-            culture="ru"
+            culture="en"
           />
         </div>
       )}

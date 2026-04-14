@@ -102,7 +102,7 @@ export default function FaceIdModal({
       await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
       setModelsLoaded(true);
     } catch (err) {
-      message.error("Ошибка загрузки моделей Face-ID");
+      message.error("Failed to load Face-ID models");
       console.error(err);
     }
     setLoading(false);
@@ -121,7 +121,7 @@ export default function FaceIdModal({
     setStudentsWithoutPhoto(noPhoto.map((s) => s.fullName));
 
     if (withPhoto.length === 0) {
-      message.warning("Нет студентов с фотографиями для распознавания");
+      message.warning("No students with photos available for recognition");
       setLoading(false);
       return;
     }
@@ -167,7 +167,7 @@ export default function FaceIdModal({
       matcherRef.current = new faceapi.FaceMatcher(labeledDescriptors, threshold);
       setMatcherReady(true);
     } else {
-      message.warning("Не удалось извлечь дескрипторы ни одного студента");
+      message.warning("Could not extract descriptors for any student");
     }
 
     setLoading(false);
@@ -231,7 +231,7 @@ export default function FaceIdModal({
         }
       }, 1500);
     } catch (err) {
-      message.error("Не удалось получить доступ к камере");
+      message.error("Could not access the camera");
       console.error(err);
     }
   };
@@ -279,10 +279,10 @@ export default function FaceIdModal({
       }
 
       message.success(
-        `Обнаружено лиц: ${detections.length}, распознано: ${matchCount}`
+        `Faces detected: ${detections.length}, recognized: ${matchCount}`
       );
     } catch (err) {
-      message.error("Ошибка обработки изображения");
+      message.error("Error processing image");
       console.error(err);
     }
     setLoading(false);
@@ -298,13 +298,13 @@ export default function FaceIdModal({
 
   return (
     <Modal
-      title="Face-ID — Сканирование"
+      title="Face-ID — Scanning"
       open={open}
       onCancel={handleClose}
       width={700}
       footer={[
         <Button key="close" type="primary" onClick={handleClose}>
-          Применить результаты ({matchedCount} распознано)
+          Apply Results ({matchedCount} recognized)
         </Button>,
       ]}
     >
@@ -313,7 +313,7 @@ export default function FaceIdModal({
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}
-          message={`${studentsWithoutPhoto.length} студентов без фото — отметьте вручную`}
+          message={`${studentsWithoutPhoto.length} students without a photo — mark manually`}
           description={studentsWithoutPhoto.join(", ")}
         />
       )}
@@ -324,7 +324,7 @@ export default function FaceIdModal({
             <>
               <LoadingOutlined style={{ fontSize: 24, marginBottom: 8 }} />
               <Typography.Text style={{ display: "block" }}>
-                Загрузка моделей и дескрипторов...
+                Loading models and descriptors...
               </Typography.Text>
               {buildProgress > 0 && (
                 <Progress percent={buildProgress} size="small" style={{ maxWidth: 300, margin: "8px auto" }} />
@@ -332,7 +332,7 @@ export default function FaceIdModal({
             </>
           ) : (
             <Button onClick={() => loadModels().then(buildMatcher)}>
-              Загрузить модели
+              Load Models
             </Button>
           )}
         </div>
@@ -347,8 +347,8 @@ export default function FaceIdModal({
               if (v === "upload") stopWebcam();
             }}
             options={[
-              { label: "Камера", value: "webcam", icon: <CameraOutlined /> },
-              { label: "Загрузка фото", value: "upload", icon: <UploadOutlined /> },
+              { label: "Camera", value: "webcam", icon: <CameraOutlined /> },
+              { label: "Upload Photo", value: "upload", icon: <UploadOutlined /> },
             ]}
             style={{ marginBottom: 16 }}
           />
@@ -382,7 +382,7 @@ export default function FaceIdModal({
                     }}
                   >
                     <Tag color="red" icon={<LoadingOutlined />}>
-                      Сканирование...
+                      Scanning...
                     </Tag>
                   </div>
                 )}
@@ -395,11 +395,11 @@ export default function FaceIdModal({
                     onClick={startWebcam}
                     disabled={!matcherReady}
                   >
-                    Начать сканирование
+                    Start Scanning
                   </Button>
                 ) : (
                   <Button danger onClick={stopWebcam}>
-                    Остановить
+                    Stop
                   </Button>
                 )}
               </div>
@@ -419,9 +419,9 @@ export default function FaceIdModal({
               <p className="ant-upload-drag-icon">
                 <UploadOutlined style={{ fontSize: 32, color: "#1677ff" }} />
               </p>
-              <p>Перетащите фото или нажмите для выбора</p>
+              <p>Drag and drop a photo or click to select</p>
               <p style={{ color: "#888", fontSize: 12 }}>
-                Групповое фото класса для массового распознавания
+                Group class photo for bulk recognition
               </p>
             </Upload.Dragger>
           )}
@@ -430,7 +430,7 @@ export default function FaceIdModal({
           {results.size > 0 && (
             <div style={{ marginTop: 16 }}>
               <Typography.Text strong>
-                Распознано: {matchedCount} / {totalWithPhoto}
+                Recognized: {matchedCount} / {totalWithPhoto}
               </Typography.Text>
               <div style={{ marginTop: 8, maxHeight: 200, overflow: "auto" }}>
                 {students.filter((s) => results.has(s.studentId)).map((s) => {
@@ -449,7 +449,7 @@ export default function FaceIdModal({
               {students.filter((s) => s.facePhotoUrl && !results.has(s.studentId)).length > 0 && (
                 <>
                   <Typography.Text type="secondary" style={{ display: "block", marginTop: 8 }}>
-                    Не распознано:
+                    Not recognized:
                   </Typography.Text>
                   <div style={{ maxHeight: 150, overflow: "auto" }}>
                     {students.filter((s) => s.facePhotoUrl && !results.has(s.studentId)).map((s) => (

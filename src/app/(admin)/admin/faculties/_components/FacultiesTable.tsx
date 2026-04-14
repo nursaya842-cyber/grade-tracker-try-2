@@ -38,7 +38,7 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
       const res = await updateFaculty(editing.id, values.name);
       if (res.error) message.error(res.error);
       else {
-        message.success("Факультет обновлён");
+        message.success("Faculty updated");
         setModalOpen(false);
         setEditing(null);
         form.resetFields();
@@ -47,7 +47,7 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
       const res = await createFaculty(values.name);
       if (res.error) message.error(res.error);
       else {
-        message.success("Факультет создан");
+        message.success("Faculty created");
         setModalOpen(false);
         form.resetFields();
       }
@@ -59,18 +59,18 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
   const handleDelete = async (id: string) => {
     const res = await deleteFaculty(id);
     if (res.error) message.error(res.error);
-    else message.success("Факультет удалён");
+    else message.success("Faculty deleted");
   };
 
   const columns: ColumnsType<Faculty> = [
     {
-      title: "Название",
+      title: "Name",
       dataIndex: "name",
       key: "name",
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
-      title: "Студентов",
+      title: "Students",
       dataIndex: "studentCount",
       key: "studentCount",
       width: 120,
@@ -78,14 +78,14 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
       sorter: (a, b) => a.studentCount - b.studentCount,
     },
     {
-      title: "Дата создания",
+      title: "Created at",
       dataIndex: "created_at",
       key: "created_at",
       render: (v: string) => formatDateTime(v),
       responsive: ["lg"] as const,
     },
     {
-      title: "Действия",
+      title: "Actions",
       key: "actions",
       width: 120,
       render: (_, record) => (
@@ -101,11 +101,11 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
             }}
           />
           <Popconfirm
-            title="Удалить факультет?"
-            description="Студенты будут отвязаны от факультета."
+            title="Delete faculty?"
+            description="Students will be unlinked from the faculty."
             onConfirm={() => handleDelete(record.id)}
-            okText="Удалить"
-            cancelText="Отмена"
+            okText="Delete"
+            cancelText="Cancel"
           >
             <Button type="text" size="small" danger icon={<DeleteOutlined />} />
           </Popconfirm>
@@ -118,7 +118,7 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
         <Typography.Title level={4} style={{ margin: 0 }}>
-          Факультеты
+          Faculties
         </Typography.Title>
         <Button
           type="primary"
@@ -129,12 +129,12 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
             setModalOpen(true);
           }}
         >
-          Добавить
+          Add
         </Button>
       </div>
 
       <Input.Search
-        placeholder="Поиск по названию..."
+        placeholder="Search by name..."
         allowClear
         onChange={(e) => setSearch(e.target.value)}
         style={{ marginBottom: 16, maxWidth: 360 }}
@@ -150,7 +150,7 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
 
       <Modal
         forceRender={mounted}
-        title={editing ? "Редактировать факультет" : "Новый факультет"}
+        title={editing ? "Edit faculty" : "New faculty"}
         open={modalOpen}
         onOk={handleSubmit}
         onCancel={() => {
@@ -159,16 +159,16 @@ export default function FacultiesTable({ faculties }: { faculties: Faculty[] }) 
           form.resetFields();
         }}
         confirmLoading={loading}
-        okText={editing ? "Сохранить" : "Создать"}
-        cancelText="Отмена"
+        okText={editing ? "Save" : "Create"}
+        cancelText="Cancel"
       >
         <Form form={form} layout="vertical" requiredMark={false}>
           <Form.Item
             name="name"
-            label="Название факультета"
-            rules={[{ required: true, message: "Введите название" }]}
+            label="Faculty name"
+            rules={[{ required: true, message: "Enter name" }]}
           >
-            <Input placeholder="Факультет информационных технологий" />
+            <Input placeholder="Faculty of Information Technology" />
           </Form.Item>
         </Form>
       </Modal>

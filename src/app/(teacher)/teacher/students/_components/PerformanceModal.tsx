@@ -69,7 +69,7 @@ export default function PerformanceModal({
 
   return (
     <Modal
-      title={`Оценки: ${studentName}`}
+      title={`Grades: ${studentName}`}
       open={!!studentId}
       onCancel={onClose}
       footer={null}
@@ -83,7 +83,7 @@ export default function PerformanceModal({
         <>
           <Select
             style={{ width: "100%", marginBottom: 16 }}
-            placeholder="Выберите предмет"
+            placeholder="Select subject"
             value={selectedSubject}
             onChange={setSelectedSubject}
             options={subjects.map((s) => ({ label: s.name, value: s.id }))}
@@ -101,12 +101,12 @@ export default function PerformanceModal({
                   stroke="#1677ff"
                   strokeWidth={2}
                   dot={{ r: 4 }}
-                  name="Оценка"
+                  name="Score"
                 />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <Empty description="Нет оценок для выбранного предмета" />
+            <Empty description="No grades for the selected subject" />
           )}
         </>
       )}

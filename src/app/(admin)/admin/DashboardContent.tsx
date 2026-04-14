@@ -31,9 +31,9 @@ interface DashboardProps {
 }
 
 const roleTagMap: Record<string, { color: string; label: string }> = {
-  admin: { color: "red", label: "Админ" },
-  teacher: { color: "blue", label: "Преподаватель" },
-  student: { color: "green", label: "Студент" },
+  admin: { color: "red", label: "Admin" },
+  teacher: { color: "blue", label: "Teacher" },
+  student: { color: "green", label: "Student" },
 };
 
 export default function DashboardContent({ stats, recentUsers }: DashboardProps) {
@@ -41,28 +41,28 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
 
   const statCards = [
     {
-      title: "Студенты",
+      title: "Students",
       value: stats.students,
       icon: <UserOutlined style={{ fontSize: 24, color: "#1677ff" }} />,
       color: "#e6f4ff",
       link: "/admin/students",
     },
     {
-      title: "Преподаватели",
+      title: "Teachers",
       value: stats.teachers,
       icon: <TeamOutlined style={{ fontSize: 24, color: "#52c41a" }} />,
       color: "#f6ffed",
       link: "/admin/teachers",
     },
     {
-      title: "Уроков на этой неделе",
+      title: "Lessons This Week",
       value: stats.lessonsThisWeek,
       icon: <CalendarOutlined style={{ fontSize: 24, color: "#722ed1" }} />,
       color: "#f9f0ff",
       link: "/admin/schedule",
     },
     {
-      title: "Несданные отчёты",
+      title: "Pending Reports",
       value: stats.pendingReports,
       icon: <FileExclamationOutlined style={{ fontSize: 24, color: "#fa8c16" }} />,
       color: "#fff7e6",
@@ -72,7 +72,7 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
 
   const columns = [
     {
-      title: "Имя",
+      title: "Name",
       dataIndex: "full_name",
       key: "full_name",
     },
@@ -82,7 +82,7 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
       key: "email",
     },
     {
-      title: "Роль",
+      title: "Role",
       dataIndex: "role",
       key: "role",
       render: (role: string) => {
@@ -91,7 +91,7 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
       },
     },
     {
-      title: "Дата создания",
+      title: "Created At",
       dataIndex: "created_at",
       key: "created_at",
       render: (v: string) => formatDateTime(v),
@@ -101,7 +101,7 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
   return (
     <div>
       <Title level={4} style={{ marginTop: 0, marginBottom: 24 }}>
-        Главная
+        Dashboard
       </Title>
 
       <Row gutter={[16, 16]}>
@@ -137,7 +137,7 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={16}>
           <Card
-            title="Последние пользователи"
+            title="Recent Users"
             style={{ borderRadius: 12 }}
             styles={{ body: { padding: 0 } }}
           >
@@ -151,14 +151,14 @@ export default function DashboardContent({ stats, recentUsers }: DashboardProps)
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="Быстрый доступ" style={{ borderRadius: 12 }}>
+          <Card title="Quick Access" style={{ borderRadius: 12 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {[
-                { label: "Преподаватели", link: "/admin/teachers" },
-                { label: "Студенты", link: "/admin/students" },
-                { label: "Расписание", link: "/admin/schedule" },
-                { label: "Клубы", link: "/admin/clubs" },
-                { label: "Аналитика", link: "/admin/analytics" },
+                { label: "Teachers", link: "/admin/teachers" },
+                { label: "Students", link: "/admin/students" },
+                { label: "Schedule", link: "/admin/schedule" },
+                { label: "Clubs", link: "/admin/clubs" },
+                { label: "Analytics", link: "/admin/analytics" },
               ].map((item) => (
                 <Button
                   key={item.link}

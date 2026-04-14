@@ -29,84 +29,84 @@ interface Metrics {
 const beforeAfterData = (m: Metrics) => [
   {
     key: "1",
-    metric: "Время выставления оценок",
-    before: "~7 дней (ручной Excel)",
-    after: `${m.avgGradeEntryHours} часов (автоматический трекинг)`,
-    improvement: m.avgGradeEntryHours > 0 ? `${Math.round((168 - m.avgGradeEntryHours) / 168 * 100)}% быстрее` : "—",
+    metric: "Grade Entry Speed",
+    before: "~7 days (manual Excel)",
+    after: `${m.avgGradeEntryHours} hours (automatic tracking)`,
+    improvement: m.avgGradeEntryHours > 0 ? `${Math.round((168 - m.avgGradeEntryHours) / 168 * 100)}% faster` : "—",
     color: "green",
   },
   {
     key: "2",
-    metric: "Заполнение отчётов",
-    before: "~60% (оценка)",
+    metric: "Report Completion",
+    before: "~60% (estimate)",
     after: `${m.reportCompletionPct}% (${m.reportedLessons}/${m.totalPastLessons})`,
     improvement: m.reportCompletionPct > 60 ? `+${m.reportCompletionPct - 60}%` : "—",
     color: m.reportCompletionPct > 60 ? "green" : "orange",
   },
   {
     key: "3",
-    metric: "At-risk студенты обнаружены",
-    before: "0 (не отслеживалось)",
-    after: `${m.atRiskCount} студентов автоматически`,
-    improvement: "Новая возможность",
+    metric: "At-risk students detected",
+    before: "0 (not tracked)",
+    after: `${m.atRiskCount} students automatically`,
+    improvement: "New capability",
     color: "blue",
   },
   {
     key: "4",
-    metric: "Персональные рекомендации",
-    before: "0 (отсутствовали)",
-    after: `${m.totalRecs} сгенерировано, ${m.activeRecs} активных`,
-    improvement: "Новая возможность",
+    metric: "Personal recommendations",
+    before: "0 (none)",
+    after: `${m.totalRecs} generated, ${m.activeRecs} active`,
+    improvement: "New capability",
     color: "blue",
   },
   {
     key: "5",
-    metric: "Посещаемость оцифрована",
-    before: "Бумажные журналы",
-    after: `${m.attendanceRecords.toLocaleString()} записей`,
-    improvement: "100% цифровизация",
+    metric: "Attendance digitized",
+    before: "Paper journals",
+    after: `${m.attendanceRecords.toLocaleString()} records`,
+    improvement: "100% digitized",
     color: "green",
   },
   {
     key: "6",
-    metric: "Оценки в системе",
-    before: "Excel-таблицы",
-    after: `${m.gradeRecords.toLocaleString()} записей`,
-    improvement: "100% цифровизация",
+    metric: "Grades in system",
+    before: "Excel spreadsheets",
+    after: `${m.gradeRecords.toLocaleString()} records`,
+    improvement: "100% digitized",
     color: "green",
   },
   {
     key: "7",
-    metric: "Еженедельные Check-in",
-    before: "Не проводились",
-    after: `${m.checkinCount} заполнено`,
-    improvement: "Новая возможность",
+    metric: "Weekly Check-ins",
+    before: "Not conducted",
+    after: `${m.checkinCount} submitted`,
+    improvement: "New capability",
     color: "blue",
   },
 ];
 
 const columns = [
   {
-    title: "Метрика",
+    title: "Metric",
     dataIndex: "metric",
     key: "metric",
     width: 250,
     render: (v: string) => <Text strong>{v}</Text>,
   },
   {
-    title: "До (ручной процесс)",
+    title: "Before (manual process)",
     dataIndex: "before",
     key: "before",
     render: (v: string) => <Text type="secondary">{v}</Text>,
   },
   {
-    title: "После (CVM System)",
+    title: "After (CVM System)",
     dataIndex: "after",
     key: "after",
     render: (v: string) => <Text>{v}</Text>,
   },
   {
-    title: "Улучшение",
+    title: "Improvement",
     dataIndex: "improvement",
     key: "improvement",
     width: 180,
@@ -120,10 +120,10 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
   return (
     <div>
       <Title level={4} style={{ marginBottom: 8 }}>
-        Эффективность системы
+        System Effectiveness
       </Title>
       <Text type="secondary" style={{ display: "block", marginBottom: 24 }}>
-        Сравнение ручных процессов с KBTU CVM System на основе реальных данных
+        Comparison of manual processes vs. KBTU CVM System based on real data
       </Text>
 
       {/* KPI Cards */}
@@ -131,9 +131,9 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Скорость выставления"
+              title="Grade Entry Speed"
               value={metrics.avgGradeEntryHours}
-              suffix="ч"
+              suffix="h"
               prefix={<ClockCircleOutlined />}
               styles={{ content: { color: metrics.avgGradeEntryHours < 48 ? "#52c41a" : "#faad14" } }}
             />
@@ -142,7 +142,7 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Отчёты заполнены"
+              title="Reports Submitted"
               value={metrics.reportCompletionPct}
               suffix="%"
               prefix={<FileTextOutlined />}
@@ -153,10 +153,10 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="At-risk обнаружено"
+              title="At-risk detected"
               value={metrics.atRiskCount}
               prefix={<WarningOutlined />}
-              suffix={`из ${metrics.totalStudents}`}
+              suffix={`of ${metrics.totalStudents}`}
               styles={{ content: { color: "#1677ff" } }}
             />
           </Card>
@@ -164,7 +164,7 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="Рекомендации выданы"
+              title="Recommendations issued"
               value={metrics.totalRecs}
               prefix={<RocketOutlined />}
               styles={{ content: { color: "#722ed1" } }}
@@ -178,7 +178,7 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
         <Col xs={24} sm={8}>
           <Card style={{ textAlign: "center" }}>
             <Statistic
-              title="Записей посещаемости"
+              title="Attendance records"
               value={metrics.attendanceRecords}
               prefix={<CheckCircleOutlined />}
             />
@@ -187,7 +187,7 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
         <Col xs={24} sm={8}>
           <Card style={{ textAlign: "center" }}>
             <Statistic
-              title="Оценок в системе"
+              title="Grades in system"
               value={metrics.gradeRecords}
               prefix={<FileTextOutlined />}
             />
@@ -196,7 +196,7 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
         <Col xs={24} sm={8}>
           <Card style={{ textAlign: "center" }}>
             <Statistic
-              title="Студентов охвачено"
+              title="Students covered"
               value={metrics.totalStudents}
               prefix={<TeamOutlined />}
             />
@@ -206,7 +206,7 @@ export default function EffectivenessClient({ metrics }: { metrics: Metrics }) {
 
       {/* Before/After Table */}
       <Card
-        title="До и После — сравнительный анализ"
+        title="Before and After — Comparative Analysis"
         style={{ borderRadius: 12 }}
         styles={{ body: { padding: 0 } }}
       >

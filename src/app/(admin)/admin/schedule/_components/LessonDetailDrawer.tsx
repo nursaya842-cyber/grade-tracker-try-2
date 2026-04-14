@@ -51,7 +51,7 @@ export default function LessonDetailDrawer({ lessonId, onClose }: Props) {
     if (!lessonId) return;
     const res = await deleteLesson(lessonId);
     if (res.error) message.error(res.error);
-    else { message.success("Урок удалён"); onClose(); }
+    else { message.success("Lesson deleted"); onClose(); }
   };
 
   const handleDeleteSeries = async () => {
@@ -59,23 +59,23 @@ export default function LessonDetailDrawer({ lessonId, onClose }: Props) {
     if (!seriesId) return;
     const res = await deleteLessonSeries(seriesId);
     if (res.error) message.error(res.error);
-    else { message.success("Серия удалена"); onClose(); }
+    else { message.success("Series deleted"); onClose(); }
   };
 
   const subjects = lesson?.subjects as { name: string } | null;
   const teacher = lesson?.teacher as { full_name: string } | null;
 
   const columns = [
-    { title: "Студент", dataIndex: "name", key: "name" },
+    { title: "Student", dataIndex: "name", key: "name" },
     {
-      title: "Посещаемость", key: "attendance",
+      title: "Attendance", key: "attendance",
       render: (_: unknown, r: StudentRow) =>
-        r.attendance === "present" ? <Tag color="green">Присутствует</Tag> :
-        r.attendance === "absent" ? <Tag color="red">Отсутствует</Tag> :
-        <Tag>Не отмечен</Tag>,
+        r.attendance === "present" ? <Tag color="green">Present</Tag> :
+        r.attendance === "absent" ? <Tag color="red">Absent</Tag> :
+        <Tag>Not marked</Tag>,
     },
     {
-      title: "Оценка", key: "grade",
+      title: "Grade", key: "grade",
       render: (_: unknown, r: StudentRow) =>
         r.grade !== null ? r.grade : <span style={{ color: "#999" }}>—</span>,
     },
@@ -83,18 +83,18 @@ export default function LessonDetailDrawer({ lessonId, onClose }: Props) {
 
   return (
     <Drawer
-      title="Детали урока"
+      title="Lesson Details"
       open={!!lessonId}
       onClose={onClose}
       size="large"
       extra={
         <Space>
-          <Popconfirm title="Удалить этот урок?" onConfirm={handleDeleteSingle} okText="Да" cancelText="Нет">
-            <Button size="small" danger icon={<DeleteOutlined />}>Урок</Button>
+          <Popconfirm title="Delete this lesson?" onConfirm={handleDeleteSingle} okText="Yes" cancelText="No">
+            <Button size="small" danger icon={<DeleteOutlined />}>Lesson</Button>
           </Popconfirm>
           {!!lesson?.series_id && (
-            <Popconfirm title="Удалить всю серию?" onConfirm={handleDeleteSeries} okText="Да" cancelText="Нет">
-              <Button size="small" danger>Всю серию</Button>
+            <Popconfirm title="Delete the entire series?" onConfirm={handleDeleteSeries} okText="Yes" cancelText="No">
+              <Button size="small" danger>Entire series</Button>
             </Popconfirm>
           )}
         </Space>
@@ -105,22 +105,22 @@ export default function LessonDetailDrawer({ lessonId, onClose }: Props) {
       ) : lesson ? (
         <>
           <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
-            <Descriptions.Item label="Предмет">
+            <Descriptions.Item label="Subject">
               <Typography.Text strong>{subjects?.name ?? "—"}</Typography.Text>
             </Descriptions.Item>
-            <Descriptions.Item label="Преподаватель">
-              {teacher?.full_name ?? <Tag color="orange">Не назначен</Tag>}
+            <Descriptions.Item label="Teacher">
+              {teacher?.full_name ?? <Tag color="orange">Not assigned</Tag>}
             </Descriptions.Item>
-            <Descriptions.Item label="Время">
-              {formatDateTime(lesson.starts_at as string)} — {new Date(lesson.ends_at as string).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
+            <Descriptions.Item label="Time">
+              {formatDateTime(lesson.starts_at as string)} — {new Date(lesson.ends_at as string).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
             </Descriptions.Item>
-            <Descriptions.Item label="Отчёт">
-              {lesson.report_submitted_at ? <Tag color="green">Сдан</Tag> : <Tag>Не сдан</Tag>}
+            <Descriptions.Item label="Report">
+              {lesson.report_submitted_at ? <Tag color="green">Submitted</Tag> : <Tag>Not submitted</Tag>}
             </Descriptions.Item>
           </Descriptions>
 
           <Typography.Text strong style={{ display: "block", marginBottom: 8 }}>
-            Студенты ({rows.length})
+            Students ({rows.length})
           </Typography.Text>
           <Table
             dataSource={rows}

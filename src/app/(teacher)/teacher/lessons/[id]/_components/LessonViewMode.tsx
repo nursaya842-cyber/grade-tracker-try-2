@@ -60,18 +60,18 @@ export default function LessonViewMode({
     if (result.error) {
       message.error(result.error);
     } else {
-      message.success("Отчёт разблокирован");
+      message.success("Report unlocked");
       router.refresh();
     }
   };
 
   const handleDownloadCSV = () => {
-    const headers = ["Студент", "Посещаемость", "Оценка", "Метод"];
+    const headers = ["Student", "Attendance", "Score", "Method"];
     const csvRows = students.map((s) => [
       s.fullName,
-      s.status === "present" ? "Присутствует" : "Отсутствует",
-      s.score !== null ? String(s.score) : "Н/Д",
-      s.method === "face_id" ? "Face-ID" : "Вручную",
+      s.status === "present" ? "Present" : "Absent",
+      s.score !== null ? String(s.score) : "N/A",
+      s.method === "face_id" ? "Face-ID" : "Manual",
     ]);
 
     const csvContent =
@@ -82,33 +82,33 @@ export default function LessonViewMode({
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `отчёт_${subjectName}_${formatDateTime(startsAt).replace(/[/\\:]/g, "-")}.csv`;
+    link.download = `report_${subjectName}_${formatDateTime(startsAt).replace(/[/\\:]/g, "-")}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   const columns = [
     {
-      title: "Студент",
+      title: "Student",
       dataIndex: "fullName",
       key: "fullName",
     },
     {
-      title: "Посещаемость",
+      title: "Attendance",
       dataIndex: "status",
       key: "status",
       width: 150,
       render: (status: string | null) =>
         status === "present" ? (
-          <Tag color="green">Присутствует</Tag>
+          <Tag color="green">Present</Tag>
         ) : status === "absent" ? (
-          <Tag color="red">Отсутствует</Tag>
+          <Tag color="red">Absent</Tag>
         ) : (
-          <Tag>Не отмечен</Tag>
+          <Tag>Not marked</Tag>
         ),
     },
     {
-      title: "Оценка",
+      title: "Score",
       dataIndex: "score",
       key: "score",
       width: 100,
@@ -116,11 +116,11 @@ export default function LessonViewMode({
         score !== null ? (
           <Typography.Text strong>{score}</Typography.Text>
         ) : (
-          <Typography.Text type="secondary">Н/Д</Typography.Text>
+          <Typography.Text type="secondary">N/A</Typography.Text>
         ),
     },
     {
-      title: "Метод",
+      title: "Method",
       dataIndex: "method",
       key: "method",
       width: 120,
@@ -128,7 +128,7 @@ export default function LessonViewMode({
         method === "face_id" ? (
           <Tag color="blue">Face-ID</Tag>
         ) : method === "manual" ? (
-          <Tag>Вручную</Tag>
+          <Tag>Manual</Tag>
         ) : (
           <Tag>—</Tag>
         ),
@@ -143,23 +143,23 @@ export default function LessonViewMode({
         onClick={() => router.push("/teacher/lessons")}
         style={{ marginBottom: 16 }}
       >
-        Назад к урокам
+        Back to Lessons
       </Button>
 
       <Card style={{ marginBottom: 16 }}>
         <Descriptions column={2} size="small">
-          <Descriptions.Item label="Предмет">{subjectName}</Descriptions.Item>
-          <Descriptions.Item label="Преподаватель">
+          <Descriptions.Item label="Subject">{subjectName}</Descriptions.Item>
+          <Descriptions.Item label="Teacher">
             {teacherName}
           </Descriptions.Item>
-          <Descriptions.Item label="Начало">
+          <Descriptions.Item label="Start">
             {formatDateTime(startsAt)}
           </Descriptions.Item>
-          <Descriptions.Item label="Конец">
+          <Descriptions.Item label="End">
             {formatDateTime(endsAt)}
           </Descriptions.Item>
-          <Descriptions.Item label="Статус">
-            <Tag color="green">Отчёт отправлен</Tag>
+          <Descriptions.Item label="Status">
+            <Tag color="green">Report submitted</Tag>
           </Descriptions.Item>
         </Descriptions>
       </Card>
@@ -167,7 +167,7 @@ export default function LessonViewMode({
       <Card
         title={
           <Typography.Title level={5} style={{ margin: 0 }}>
-            Результаты урока
+            Lesson Results
           </Typography.Title>
         }
         extra={
@@ -176,22 +176,22 @@ export default function LessonViewMode({
               icon={<DownloadOutlined />}
               onClick={handleDownloadCSV}
             >
-              Скачать CSV
+              Download CSV
             </Button>
             {canUnlock && (
               <Popconfirm
-                title="Разблокировать отчёт?"
-                description="Преподаватель сможет изменить данные."
+                title="Unlock report?"
+                description="The teacher will be able to edit the data."
                 onConfirm={handleUnlock}
-                okText="Разблокировать"
-                cancelText="Отмена"
+                okText="Unlock"
+                cancelText="Cancel"
               >
                 <Button
                   icon={<UnlockOutlined />}
                   danger
                   loading={unlocking}
                 >
-                  Разблокировать
+                  Unlock
                 </Button>
               </Popconfirm>
             )}
