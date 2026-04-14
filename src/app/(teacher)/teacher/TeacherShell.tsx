@@ -9,6 +9,7 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  DashboardOutlined,
 } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -17,6 +18,7 @@ const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
 
 const menuItems = [
+  { key: "/teacher/dashboard", icon: <DashboardOutlined />, label: "Dashboard" },
   { key: "/teacher/lessons", icon: <CalendarOutlined />, label: "Lessons" },
   { key: "/teacher/students", icon: <TeamOutlined />, label: "Students" },
   { key: "/teacher/profile", icon: <UserOutlined />, label: "Profile" },

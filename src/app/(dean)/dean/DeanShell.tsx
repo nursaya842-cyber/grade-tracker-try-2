@@ -1,19 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Layout, Menu, Button, Typography, Avatar, Dropdown, theme } from "antd";
+import { Layout, Menu, Button, Typography, Avatar, Dropdown, theme, Tag } from "antd";
 import {
   DashboardOutlined,
   TeamOutlined,
   UserOutlined,
-  BookOutlined,
-  BankOutlined,
-  UsergroupAddOutlined,
-  CalendarOutlined,
-  TrophyOutlined,
-  BarChartOutlined,
-  AlertOutlined,
-  RocketOutlined,
   CrownOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -26,26 +18,18 @@ const { Sider, Content, Header } = Layout;
 const { Text } = Typography;
 
 const menuItems = [
-  { key: "/admin", icon: <DashboardOutlined />, label: "Home" },
-  { key: "/admin/teachers", icon: <TeamOutlined />, label: "Teachers" },
-  { key: "/admin/students", icon: <UserOutlined />, label: "Students" },
-  { key: "/admin/faculties", icon: <BankOutlined />, label: "Faculties" },
-  { key: "/admin/deans", icon: <CrownOutlined />, label: "Deans" },
-  { key: "/admin/parents", icon: <UsergroupAddOutlined />, label: "Parents" },
-  { key: "/admin/subjects", icon: <BookOutlined />, label: "Subjects" },
-  { key: "/admin/schedule", icon: <CalendarOutlined />, label: "Schedule" },
-  { key: "/admin/clubs", icon: <TrophyOutlined />, label: "Clubs" },
-  { key: "/admin/analytics", icon: <BarChartOutlined />, label: "Analytics" },
-  { key: "/admin/risk-dashboard", icon: <AlertOutlined />, label: "Risk Dashboard" },
-  { key: "/admin/effectiveness", icon: <RocketOutlined />, label: "Effectiveness" },
+  { key: "/dean", icon: <DashboardOutlined />, label: "Dashboard" },
+  { key: "/dean/students", icon: <TeamOutlined />, label: "Students" },
 ];
 
-export default function AdminShell({
+export default function DeanShell({
   children,
   userName,
+  facultyName,
 }: {
   children: React.ReactNode;
   userName: string;
+  facultyName: string | null;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
@@ -60,10 +44,9 @@ export default function AdminShell({
   };
 
   const selectedKey =
-    menuItems.find(
-      (item) => item.key !== "/admin" && pathname.startsWith(item.key)
-    )?.key ??
-    (pathname === "/admin" ? "/admin" : "");
+    menuItems.find((item) =>
+      item.key === "/dean" ? pathname === "/dean" : pathname.startsWith(item.key)
+    )?.key ?? "";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -98,23 +81,18 @@ export default function AdminShell({
               width: 32,
               height: 32,
               borderRadius: 8,
-              background: "linear-gradient(135deg, #1677ff, #4096ff)",
+              background: "linear-gradient(135deg, #722ed1, #9254de)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3ZM18.82 9L12 12.72L5.18 9L12 5.28L18.82 9ZM17 15.99L12 18.72L7 15.99V12.27L12 15L17 12.27V15.99Z"
-                fill="white"
-              />
-            </svg>
+            <CrownOutlined style={{ color: "#fff", fontSize: 16 }} />
           </div>
           {!collapsed && (
             <Text strong style={{ marginLeft: 12, fontSize: 15 }}>
-              KBTU CVM
+              Dean Portal
             </Text>
           )}
         </div>
@@ -124,10 +102,7 @@ export default function AdminShell({
           selectedKeys={[selectedKey]}
           items={menuItems}
           onClick={({ key }) => router.push(key)}
-          style={{
-            border: "none",
-            padding: "8px 0",
-          }}
+          style={{ border: "none", padding: "8px 0" }}
         />
       </Sider>
 
@@ -151,7 +126,6 @@ export default function AdminShell({
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
           />
-
           <Dropdown
             menu={{
               items: [
@@ -167,12 +141,18 @@ export default function AdminShell({
             placement="bottomRight"
           >
             <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-              <Avatar style={{ background: "#1677ff" }} icon={<UserOutlined />} />
-              <Text style={{ fontSize: 14 }}>{userName}</Text>
+              <Avatar style={{ background: "#722ed1" }} icon={<UserOutlined />} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                <Text style={{ fontSize: 14, lineHeight: 1.2 }}>{userName}</Text>
+                {facultyName && (
+                  <Tag color="purple" style={{ margin: 0, fontSize: 11, lineHeight: "16px" }}>
+                    {facultyName}
+                  </Tag>
+                )}
+              </div>
             </div>
           </Dropdown>
         </Header>
-
         <Content style={{ padding: 24, minHeight: "calc(100vh - 64px)" }}>
           {children}
         </Content>

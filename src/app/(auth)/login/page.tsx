@@ -32,6 +32,7 @@ export default function LoginPage() {
       if (role === "admin") router.push("/admin");
       else if (role === "teacher") router.push("/teacher/lessons");
       else if (role === "parent") router.push("/parent/children");
+      else if (role === "dean") router.push("/dean");
       else router.push("/student/schedule");
 
       router.refresh();
